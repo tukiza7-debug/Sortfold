@@ -71,6 +71,10 @@ Switching is instant via per-app language settings (Android 13+) and in-app swit
 
 Nine groups, every row functional: Language, Appearance (theme, dynamic color, reduce animations), Sorting defaults (mode, duplicate handling, destination folder, confirm-before-apply, large-batch threshold, auto-sort rules), History (retention, clear), Notifications, Updates (auto-check, check now, current version), Storage (app data size, clear cache), Diagnostics (Error Library with entry count and 30-day retention, include-full-paths toggle) and About. The Error Library is a sub-screen of Settings, deep-linked from scan errors, update errors and crash notices; identical errors are grouped with a repeat count and exported as a ZIP with paths masked by default.
 
+## What's new in 1.1.0
+
+A refreshed toolchain (AGP 8.13 / Kotlin 2.2.20 / Compose BOM 2025.09 / Android 16), a design-system pass with springs, skeletons and a wizard stepper, live progress on Home, search in History, a pager-based onboarding, and 27 bug fixes — including safer REPLACE semantics (your files can no longer be lost to a failed copy), crash-proof settings storage, and reliable undo. See [docs/CHANGELOG-1.1.0.md](docs/CHANGELOG-1.1.0.md) and [docs/AUDIT-1.1.0.md](docs/AUDIT-1.1.0.md).
+
 ## Build from source
 
 ```bash
@@ -79,7 +83,7 @@ cd Sortfold
 ./gradlew assembleDebug
 ```
 
-Requirements: JDK 17, Android SDK 35. Release signing reads `KEYSTORE_FILE`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD` from the environment; CI wires them from repository secrets.
+Requirements: JDK 17, Android SDK 36. Release signing reads `KEYSTORE_FILE`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD` from the environment; CI wires them from repository secrets.
 
 ## Contributing
 
