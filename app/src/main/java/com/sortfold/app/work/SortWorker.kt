@@ -179,7 +179,8 @@ class SortWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
         return Result.failure()
     }
 
-    private fun notifyProgress(jobId: Long, done: Int, total: Int) {
+    private suspend fun notifyProgress(jobId: Long, done: Int, total: Int) {
+        if (!container.settingsRepository.snapshot().notificationsEnabled) return
         try {
             nm.notify(jobId.toInt(), ProgressNotifications.progress(applicationContext, jobId, done, total))
         } catch (_: SecurityException) {

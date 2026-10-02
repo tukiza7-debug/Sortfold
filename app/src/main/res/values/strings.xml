@@ -162,7 +162,6 @@
     <string name="warn_low_storage">Storage is running low. The move may fail if space runs out.</string>
     <string name="warn_insufficient">Not enough free storage for this batch. Apply is blocked.</string>
     <string name="warn_replacing">Some destination files will be replaced. Their content will be lost.</string>
-    <string name="warn_different_storage">Source and destination are on different storage. Files are copied then deleted, which is slower.</string>
     <string name="warn_storage_root">You picked a storage root. Prefer a specific folder inside it.</string>
     <string name="warn_app_private">App-private folders cannot be sorted. Pick a normal folder.</string>
     <string name="warn_system_folder">This system folder is not safe to reorganize. Pick another folder.</string>
@@ -312,4 +311,9 @@
     <string name="short_policy_skip">Skip</string>
     <string name="short_policy_rename">Rename</string>
     <string name="short_policy_replace">Replace</string>
+    <string name="settings_naming_style">Date folder style</string>
+    <string name="settings_naming_readable">Readable</string>
+    <string name="battery_title">A background job was stopped</string>
+    <string name="battery_body">The system interrupted a long sort job. You can exempt Sortfold from battery optimisation so it can finish. This is optional and only offered after such an interruption.</string>
+    <string name="battery_allow">Allow</string>
 </resources>

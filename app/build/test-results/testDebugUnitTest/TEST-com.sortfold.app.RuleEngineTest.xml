@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.sortfold.app.RuleEngineTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:27:47" hostname="c-6abf6a90-14810412-840fa9da916c" time="0.067">
+<testsuite name="com.sortfold.app.RuleEngineTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:45:53" hostname="c-6abf6a90-14810412-840fa9da916c" time="0.147">
   <properties/>
   <testcase name="size buckets use thresholds" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
-  <testcase name="file type mode buckets by mime" classname="com.sortfold.app.RuleEngineTest" time="0.006"/>
-  <testcase name="totals count moves skips and bytes" classname="com.sortfold.app.RuleEngineTest" time="0.0"/>
-  <testcase name="date mode produces year and month segments" classname="com.sortfold.app.RuleEngineTest" time="0.008"/>
+  <testcase name="file type mode buckets by mime" classname="com.sortfold.app.RuleEngineTest" time="0.009"/>
+  <testcase name="totals count moves skips and bytes" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
+  <testcase name="date mode produces year and month segments" classname="com.sortfold.app.RuleEngineTest" time="0.036"/>
+  <testcase name="sort config style flows into segments" classname="com.sortfold.app.RuleEngineTest" time="0.044"/>
   <testcase name="date mode prefers date taken over last modified" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
-  <testcase name="duplicate replace flags replacement" classname="com.sortfold.app.RuleEngineTest" time="0.023"/>
-  <testcase name="duplicate rename generates first free candidate" classname="com.sortfold.app.RuleEngineTest" time="0.0"/>
-  <testcase name="resolution classes follow orientation then quality" classname="com.sortfold.app.RuleEngineTest" time="0.0"/>
+  <testcase name="duplicate replace flags replacement" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
+  <testcase name="duplicate rename generates first free candidate" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
+  <testcase name="resolution classes follow orientation then quality" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
   <testcase name="duplicate skip keeps existing destination name" classname="com.sortfold.app.RuleEngineTest" time="0.0"/>
   <testcase name="source app detects camera screenshots whatsapp telegram downloads" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
   <testcase name="directories are never planned" classname="com.sortfold.app.RuleEngineTest" time="0.0"/>
+  <testcase name="readable date style spells the month" classname="com.sortfold.app.RuleEngineTest" time="0.0"/>
   <testcase name="media type detection from extension" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
   <testcase name="combined modes nest in canonical priority order" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
-  <testcase name="extension falls back from name when mime is generic" classname="com.sortfold.app.RuleEngineTest" time="0.0"/>
-  <testcase name="name pattern rules match prefix contains suffix" classname="com.sortfold.app.RuleEngineTest" time="0.002"/>
+  <testcase name="extension falls back from name when mime is generic" classname="com.sortfold.app.RuleEngineTest" time="0.001"/>
+  <testcase name="name pattern rules match prefix contains suffix" classname="com.sortfold.app.RuleEngineTest" time="0.035"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

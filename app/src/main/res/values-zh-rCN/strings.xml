@@ -148,7 +148,6 @@
     <string name="warn_low_storage">存储空间不足。空间耗尽时移动可能失败。</string>
     <string name="warn_insufficient">可用存储空间不足以完成这批移动，已阻止应用。</string>
     <string name="warn_replacing">部分目标文件将被替换，其内容会丢失。</string>
-    <string name="warn_different_storage">源和目标位于不同存储。文件会先复制后删除，速度较慢。</string>
     <string name="warn_storage_root">你选择了存储根目录。建议选择其中的具体文件夹。</string>
     <string name="warn_app_private">应用私有文件夹无法整理。请选择普通文件夹。</string>
     <string name="warn_system_folder">此系统文件夹不适合重新整理。请选择其他文件夹。</string>
@@ -292,4 +291,9 @@
     <string name="short_policy_skip">跳过</string>
     <string name="short_policy_rename">重命名</string>
     <string name="short_policy_replace">替换</string>
+    <string name="settings_naming_style">日期文件夹样式</string>
+    <string name="settings_naming_readable">易读</string>
+    <string name="battery_title">有后台任务被系统停止</string>
+    <string name="battery_body">系统中断了一次较长的整理任务。你可以将 Sortfold 加入电池优化豁免名单以便完成任务。此项为可选，且仅在这种中断发生后才会出现。</string>
+    <string name="battery_allow">允许</string>
 </resources>

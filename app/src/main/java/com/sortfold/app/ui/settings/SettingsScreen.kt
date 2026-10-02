@@ -173,6 +173,19 @@ fun SettingsScreen(
                             }
                         }
                     }
+                    Text(stringResource(R.string.settings_naming_style), style = MaterialTheme.typography.titleSmall)
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        SegmentedButton(
+                            selected = settings.namingStyleIso,
+                            onClick = { vm.set { container.settingsRepository.setNamingStyleIso(true) } },
+                            shape = SegmentedButtonDefaults.itemShape(0, 2),
+                        ) { Text("2024-05") }
+                        SegmentedButton(
+                            selected = !settings.namingStyleIso,
+                            onClick = { vm.set { container.settingsRepository.setNamingStyleIso(false) } },
+                            shape = SegmentedButtonDefaults.itemShape(1, 2),
+                        ) { Text(stringResource(R.string.settings_naming_readable)) }
+                    }
                     ToggleRow(
                         label = stringResource(R.string.settings_confirm_apply),
                         checked = settings.confirmBeforeApply,

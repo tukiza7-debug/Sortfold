@@ -53,6 +53,12 @@ class HomeViewModel(private val container: AppContainer) : ViewModel() {
             container.settingsRepository.setCrashedLastRun(false)
         }
     }
+
+    fun dismissBatteryOffer() {
+        viewModelScope.launch {
+            container.settingsRepository.setJobKilledBySystem(false)
+        }
+    }
 }
 
 @Composable
@@ -66,6 +72,7 @@ fun HomeScreen(
     val vm: HomeViewModel = viewModel(factory = simpleFactory { HomeViewModel(container) })
     val settings by vm.settings.collectAsStateWithLifecycle()
     val jobs by vm.recentJobs.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LazyColumn(
         Modifier
@@ -106,6 +113,31 @@ fun HomeScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = onOpenErrors) { Text(stringResource(R.string.home_crash_view)) }
                             TextButton(onClick = { vm.acknowledgeCrash() }) { Text(stringResource(R.string.action_dismiss)) }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Battery exemption is ONLY offered after the system killed a long job.
+        if (settings?.jobKilledBySystem == true) {
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                ) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.battery_title), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            stringResource(R.string.battery_body),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = {
+                                val i = android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                                    .setData(android.net.Uri.parse("package:${context.packageName}"))
+                                runCatching { context.startActivity(i) }
+                            }) { Text(stringResource(R.string.battery_allow)) }
+                            TextButton(onClick = { vm.dismissBatteryOffer() }) { Text(stringResource(R.string.action_dismiss)) }
                         }
                     }
                 }

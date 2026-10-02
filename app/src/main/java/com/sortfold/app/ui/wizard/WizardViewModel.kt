@@ -28,6 +28,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -65,9 +66,54 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
         private set
 
     var selectedModes by mutableStateOf(setOf(SortMode.FILE_TYPE))
+        private set
     var granularity by mutableStateOf(DateGranularity.MONTH)
+        private set
     var policy by mutableStateOf(DuplicatePolicy.SKIP)
+        private set
     val nameRules = mutableStateListOf<NameRule>()
+
+    init {
+        // Apply the user's saved defaults (settings must change real behaviour).
+        viewModelScope.launch {
+            val s = container.settingsRepository.snapshot()
+            selectedModes = setOf(s.defaultSortMode)
+            policy = s.defaultDuplicatePolicy
+            granularity = s.defaultDateGranularity
+            dateStyleIso = s.namingStyleIso
+            s.defaultDestTreeUri?.let { pendingDefaultTree = it }
+        }
+    }
+
+    /** Set from DataStore init; consumed by FolderStep to preselect the folder. */
+    var pendingDefaultTree by mutableStateOf<String?>(null)
+        private set
+    var dateStyleIso by mutableStateOf(true)
+        private set
+
+    fun consumePendingDefaultTree(): String? {
+        val v = pendingDefaultTree
+        pendingDefaultTree = null
+        return v
+    }
+
+    fun chooseGranularity(g: DateGranularity) {
+        granularity = g
+    }
+
+    fun setModes(modes: Set<SortMode>) {
+        selectedModes = modes
+        refreshLivePreview()
+    }
+
+    fun toggleMode(mode: SortMode, checked: Boolean) {
+        selectedModes = if (checked) selectedModes + mode else selectedModes - mode
+        refreshLivePreview()
+    }
+
+    fun choosePolicy(p: DuplicatePolicy) {
+        policy = p
+    }
 
     var suggestions by mutableStateOf<List<ModeSuggester.Suggestion>>(emptyList())
         private set
@@ -174,6 +220,7 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
     private fun currentConfig() = SortConfig(
         modes = selectedModes,
         dateGranularity = granularity,
+        dateStyleIso = dateStyleIso,
         nameRules = nameRules.toList(),
         duplicatePolicy = policy,
         treePath = treeLabel,
@@ -217,6 +264,8 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
             if (plan.any { it.action == PlanAction.REPLACE }) {
                 w += WizardWarning("replacing", false)
             }
+            // Destination is always inside the source tree in this design, so a
+            // cross-storage copy+delete path never happens by construction.
             if (treeRisk != StorageSafety.TreeRisk.NONE) {
                 w += WizardWarning(
                     when (treeRisk) {

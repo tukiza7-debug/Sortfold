@@ -4,6 +4,22 @@
 /home/z/my-project/Sortfold/lint.xml:7: Warning: Unexpected attribute path, expected id, in or severity [LintWarning]
     <issue id="ObsoleteSdkInt" severity="ignore" path="res/mipmap-anydpi-v26" />
     ^
+/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/home/HomeScreen.kt:136: Warning: Use of REQUEST_IGNORE_BATTERY_OPTIMIZATIONS violates the Play Store Content Policy regarding acceptable use cases, as described in https://developer.android.com/training/monitoring-device-state/doze-standby.html [BatteryLife]
+                                val i = android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "BatteryLife":
+   This issue flags code that either
+   * negatively affects battery life, or
+   * uses APIs that have recently changed behavior to prevent background tasks
+   from consuming memory and battery excessively.
+
+   Generally, you should be using WorkManager instead.
+
+   For more details on how to update your code, please see
+   https://developer.android.com/topic/performance/background-optimization
+
+
 /home/z/my-project/Sortfold/gradle/libs.versions.toml:2: Warning: A newer version of com.android.application than 8.7.3 is available: 9.4.1 [AndroidGradlePluginVersion]
 agp = "8.7.3"
       ~~~~~~~
@@ -197,13 +213,13 @@ splashscreen = "1.0.1"
 /home/z/my-project/Sortfold/app/src/main/res/values/strings.xml:156: Warning: Formatting %d followed by words ("files"): This should probably be a plural rather than a string [PluralsCandidate]
     <string name="confirm_apply_body">%1$d files (%2$s) will be moved inside \"%3$s\". You can undo afterwards.</string>
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml:179: Warning: Formatting %d followed by words ("files"): This should probably be a plural rather than a string [PluralsCandidate]
+/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml:178: Warning: Formatting %d followed by words ("files"): This should probably be a plural rather than a string [PluralsCandidate]
     <string name="result_undo_summary">%1$d files restored, %2$d failed.</string>
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml:218: Warning: Formatting %d followed by words ("days"): This should probably be a plural rather than a string [PluralsCandidate]
+/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml:217: Warning: Formatting %d followed by words ("days"): This should probably be a plural rather than a string [PluralsCandidate]
     <string name="errors_expires_in">Expires in %1$d days</string>
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml:260: Warning: Formatting %d followed by words ("files"): This should probably be a plural rather than a string [PluralsCandidate]
+/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml:259: Warning: Formatting %d followed by words ("files"): This should probably be a plural rather than a string [PluralsCandidate]
     <string name="settings_batch_threshold_value">%1$d files</string>
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -237,7 +253,7 @@ splashscreen = "1.0.1"
 /home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/settings/AutoRulesScreen.kt:73: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
     var newPolicyIndex by rememberSaveable { mutableStateOf(0) }
                                              ~~~~~~~~~~~~~~
-/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt:529: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt:535: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
     var typeIndex by rememberSaveable { mutableStateOf(0) }
                                         ~~~~~~~~~~~~~~
 
@@ -256,4 +272,4 @@ splashscreen = "1.0.1"
    Identifier: androidx.compose.runtime
    Feedback: https://issuetracker.google.com/issues/new?component=612128
 
-0 errors, 66 warnings
+0 errors, 67 warnings

@@ -158,7 +158,6 @@
     <string name="warn_low_storage">المساحة منخفضة. قد يفشل النقل إن نفدت المساحة.</string>
     <string name="warn_insufficient">لا توجد مساحة كافية لهذه الدفعة. التطبيق محجوب.</string>
     <string name="warn_replacing">ستُستبدل بعض ملفات الوجهة. سيفقد محتواها.</string>
-    <string name="warn_different_storage">المصدر والوجهة على وحدتي تخزين مختلفتين. تُنسخ الملفات ثم تُحذف، وهذا أبطأ.</string>
     <string name="warn_storage_root">اخترت جذر التخزين. يُفضَّل اختيار مجلد محدد داخله.</string>
     <string name="warn_app_private">لا يمكن فرز مجلدات التطبيقات الخاصة. اختر مجلدًا عاديًا.</string>
     <string name="warn_system_folder">هذا مجلد نظام غير آمن لإعادة الترتيب. اختر مجلدًا آخر.</string>
@@ -302,4 +301,9 @@
     <string name="short_policy_skip">تخطٍ</string>
     <string name="short_policy_rename">تسمية</string>
     <string name="short_policy_replace">استبدال</string>
+    <string name="settings_naming_style">نمط مجلدات التاريخ</string>
+    <string name="settings_naming_readable">مقروء</string>
+    <string name="battery_title">توقف إحدى مهام الخلفية</string>
+    <string name="battery_body">قاطع النظام عملية فرز طويلة. يمكنك استثناء Sortfold من تحسين البطارية ليتتمكن من الإنهاء. هذا اختياري ولا يُعرض إلا بعد مقاطعة كهذه.</string>
+    <string name="battery_allow">السماح</string>
 </resources>

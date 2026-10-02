@@ -63,6 +63,23 @@ class RuleEngineTest {
     }
 
     @Test
+    fun `readable date style spells the month`() {
+        val readable = RuleEngine.dateSegment(1_700_000_000_000, DateGranularity.MONTH, iso = false)
+        assertEquals("November 2023", readable)
+        // Year style is unaffected by the style toggle.
+        assertEquals("2023", RuleEngine.dateSegment(1_700_000_000_000, DateGranularity.YEAR, iso = false))
+    }
+
+    @Test
+    fun `sort config style flows into segments`() {
+        val f = file("x.jpg").copy(dateTakenMillis = 1_600_000_000_000)
+        val iso = RuleEngine.plan(listOf(f), SortConfig(modes = setOf(SortMode.DATE_TAKEN), dateStyleIso = true))
+        val readable = RuleEngine.plan(listOf(f), SortConfig(modes = setOf(SortMode.DATE_TAKEN), dateStyleIso = false))
+        assertEquals("2020-09", iso[0].destinationFolder)
+        assertEquals("September 2020", readable[0].destinationFolder)
+    }
+
+    @Test
     fun `date mode prefers date taken over last modified`() {
         val config = SortConfig(modes = setOf(SortMode.DATE_TAKEN))
         val f = file("x.jpg").copy(dateTakenMillis = 1_600_000_000_000) // 2020-09

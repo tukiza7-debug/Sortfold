@@ -177,9 +177,9 @@ document.getElementById(id).style.display = 'none';
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
-      <span class="mdl-layout-title">Lint Report: 66 warnings</span>
+      <span class="mdl-layout-title">Lint Report: 67 warnings</span>
       <div class="mdl-layout-spacer"></div>
-      <nav class="mdl-navigation mdl-layout--large-screen-only">Check performed at Fri Oct 02 10:29:13 UTC 2026 by AGP (8.7.3)</nav>
+      <nav class="mdl-navigation mdl-layout--large-screen-only">Check performed at Fri Oct 02 10:47:08 UTC 2026 by AGP (8.7.3)</nav>
     </div>
   </header>
   <div class="mdl-layout__drawer">
@@ -187,6 +187,7 @@ document.getElementById(id).style.display = 'none';
     <nav class="mdl-navigation">
       <a class="mdl-navigation__link" href="#overview"><i class="material-icons">dashboard</i>Overview</a>
       <a class="mdl-navigation__link" href="#LintWarning"><i class="material-icons warning-icon">warning</i>Lint Failure (4)</a>
+      <a class="mdl-navigation__link" href="#BatteryLife"><i class="material-icons warning-icon">warning</i>Battery Life Issues (1)</a>
       <a class="mdl-navigation__link" href="#AndroidGradlePluginVersion"><i class="material-icons warning-icon">warning</i>Obsolete Android Gradle Plugin Version (3)</a>
       <a class="mdl-navigation__link" href="#GradleDependency"><i class="material-icons warning-icon">warning</i>Obsolete Gradle Dependency (51)</a>
       <a class="mdl-navigation__link" href="#PluralsCandidate"><i class="material-icons warning-icon">warning</i>Potential Plurals (8)</a>
@@ -211,6 +212,9 @@ document.getElementById(id).style.display = 'none';
 <tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Correctness">Correctness</a>
 </td></tr>
 <tr>
+<td class="countColumn">1</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
+<a href="#BatteryLife">BatteryLife</a>: Battery Life Issues</td></tr>
+<tr>
 <td class="countColumn">3</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
 <a href="#AndroidGradlePluginVersion">AndroidGradlePluginVersion</a>: Obsolete Android Gradle Plugin Version</td></tr>
 <tr>
@@ -228,7 +232,7 @@ document.getElementById(id).style.display = 'none';
 <a href="#AutoboxingStateCreation">AutoboxingStateCreation</a>: <code>State&lt;T></code> will autobox values assigned to this state. Use a specialized state type instead.</td></tr>
 <tr><td></td><td class="categoryColumn"><a href="#ExtraIssues">Included Additional Checks (95)</a>
 </td></tr>
-<tr><td></td><td class="categoryColumn"><a href="#MissingIssues">Disabled Checks (561)</a>
+<tr><td></td><td class="categoryColumn"><a href="#MissingIssues">Disabled Checks (560)</a>
 </td></tr>
 </table>
 <br/>              </div>
@@ -291,7 +295,59 @@ Dismiss</button>            </div>
             </div>
           </section>
 <a name="Correctness"></a>
-<a name="AndroidGradlePluginVersion"></a>
+<a name="BatteryLife"></a>
+<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="BatteryLifeCard" style="display: block;">
+            <div class="mdl-card mdl-cell mdl-cell--12-col">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">Battery Life Issues</h2>
+  </div>
+              <div class="mdl-card__supporting-text">
+<div class="issue">
+<div class="warningslist">
+<span class="location"><a href="../../src/main/java/com/sortfold/app/ui/home/HomeScreen.kt">../../src/main/java/com/sortfold/app/ui/home/HomeScreen.kt</a>:136</span>: <span class="message">Use of <code>REQUEST_IGNORE_BATTERY_OPTIMIZATIONS</code> violates the Play Store Content Policy regarding acceptable use cases, as described in <a href="https://developer.android.com/training/monitoring-device-state/doze-standby.html">https://developer.android.com/training/monitoring-device-state/doze-standby.html</a></span><br /><pre class="errorlines">
+<span class="lineno"> 133 </span>  )
+<span class="lineno"> 134 </span>  Row(horizontalArrangement = Arrangement.spacedBy(<span class="number">8.d</span>p)) {
+<span class="lineno"> 135 </span>      TextButton(onClick = {
+<span class="caretline"><span class="lineno"> 136 </span>          <span class="keyword">val</span> i = android.content.Intent(android.provider.Settings.<span class="warning">ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS</span>)</span>
+<span class="lineno"> 137 </span>              .setData(android.net.Uri.parse(<span class="string">"package:${</span>context.packageName<span class="string">}"</span>))
+<span class="lineno"> 138 </span>          runCatching { context.startActivity(i) }
+<span class="lineno"> 139 </span>      }) { Text(stringResource(R.string.battery_allow)) }
+</pre>
+
+</div>
+<div class="metadata"><div class="explanation" id="explanationBatteryLife" style="display: none;">
+This issue flags code that either<br/>
+* negatively affects battery life, or<br/>
+* uses APIs that have recently changed behavior to prevent background tasks from consuming memory and battery excessively.<br/>
+<br/>
+Generally, you should be using <code>WorkManager</code> instead.<br/>
+<br/>
+For more details on how to update your code, please see <a href="https://developer.android.com/topic/performance/background-optimization">https://developer.android.com/topic/performance/background-optimization</a><br/><div class="moreinfo">More info: <a href="https://developer.android.com/topic/performance/background-optimization">https://developer.android.com/topic/performance/background-optimization</a>
+</div>To suppress this error, use the issue id "BatteryLife" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
+<br/></div>
+</div>
+</div>
+<div class="chips">
+<span class="mdl-chip">
+    <span class="mdl-chip__text">BatteryLife</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Correctness</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Warning</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Priority 5/10</span>
+</span>
+</div>
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationBatteryLifeLink" onclick="reveal('explanationBatteryLife');">
+Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="BatteryLifeCardLink" onclick="hideid('BatteryLifeCard');">
+Dismiss</button>            </div>
+            </div>
+          </section><a name="AndroidGradlePluginVersion"></a>
 <section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="AndroidGradlePluginVersionCard" style="display: block;">
             <div class="mdl-card mdl-cell mdl-cell--12-col">
   <div class="mdl-card__title">
@@ -946,32 +1002,32 @@ Dismiss</button>            </div>
 <span class="lineno"> 158 </span>
 <span class="lineno"> 159 </span>  <span class="comment">&lt;!-- Warnings --></span></pre>
 
-<span class="location"><a href="../../src/main/res/values/strings.xml">../../src/main/res/values/strings.xml</a>:179</span>: <span class="message">Formatting %d followed by words ("files"): This should probably be a plural rather than a string</span><br /><pre class="errorlines">
-<span class="lineno"> 176 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_failed_title"</span>>Could not finish<span class="tag">&lt;/string></span>
-<span class="lineno"> 177 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_cancelled_title"</span>>Cancelled<span class="tag">&lt;/string></span>
-<span class="lineno"> 178 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_note"</span>>Note<span class="tag">&lt;/string></span>
-<span class="caretline"><span class="lineno"> 179 </span>  <span class="warning"><span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_undo_summary"</span>>%1$d files restored, %2$d failed.<span class="tag">&lt;/string></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 180 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_undo_note"</span>>Undo copies files back to their original folder and removes the sorted copy. It only applies to this last operation.<span class="tag">&lt;/string></span>
-<span class="lineno"> 181 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_done"</span>>Done<span class="tag">&lt;/string></span>
-<span class="lineno"> 182 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_screen_title"</span>>Sort result<span class="tag">&lt;/string></span></pre>
+<span class="location"><a href="../../src/main/res/values/strings.xml">../../src/main/res/values/strings.xml</a>:178</span>: <span class="message">Formatting %d followed by words ("files"): This should probably be a plural rather than a string</span><br /><pre class="errorlines">
+<span class="lineno"> 175 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_failed_title"</span>>Could not finish<span class="tag">&lt;/string></span>
+<span class="lineno"> 176 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_cancelled_title"</span>>Cancelled<span class="tag">&lt;/string></span>
+<span class="lineno"> 177 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_note"</span>>Note<span class="tag">&lt;/string></span>
+<span class="caretline"><span class="lineno"> 178 </span>  <span class="warning"><span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_undo_summary"</span>>%1$d files restored, %2$d failed.<span class="tag">&lt;/string></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 179 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_undo_note"</span>>Undo copies files back to their original folder and removes the sorted copy. It only applies to this last operation.<span class="tag">&lt;/string></span>
+<span class="lineno"> 180 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_done"</span>>Done<span class="tag">&lt;/string></span>
+<span class="lineno"> 181 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"result_screen_title"</span>>Sort result<span class="tag">&lt;/string></span></pre>
 
-<span class="location"><a href="../../src/main/res/values/strings.xml">../../src/main/res/values/strings.xml</a>:218</span>: <span class="message">Formatting %d followed by words ("days"): This should probably be a plural rather than a string</span><br /><pre class="errorlines">
-<span class="lineno"> 215 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"errors_clear_confirm"</span>>Delete all<span class="tag">&lt;/string></span>
-<span class="lineno"> 216 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"errors_empty_title"</span>>No errors recorded<span class="tag">&lt;/string></span>
-<span class="lineno"> 217 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"errors_empty_body"</span>>Problems caught by the app will appear here for 30 days.<span class="tag">&lt;/string></span>
-<span class="caretline"><span class="lineno"> 218 </span>  <span class="warning"><span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"errors_expires_in"</span>>Expires in %1$d days<span class="tag">&lt;/string></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 219 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"export_notice_title"</span>>Export contents<span class="tag">&lt;/string></span>
-<span class="lineno"> 220 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"export_notice_body"</span>>The ZIP contains a readable report, structured JSON data and a CSV of recent moves. File contents are never included. Folder paths are masked to file names unless you include them below. Nothing is uploaded — you choose where to share it.<span class="tag">&lt;/string></span>
-<span class="lineno"> 221 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"export_notice_share"</span>>Export and share<span class="tag">&lt;/string></span></pre>
+<span class="location"><a href="../../src/main/res/values/strings.xml">../../src/main/res/values/strings.xml</a>:217</span>: <span class="message">Formatting %d followed by words ("days"): This should probably be a plural rather than a string</span><br /><pre class="errorlines">
+<span class="lineno"> 214 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"errors_clear_confirm"</span>>Delete all<span class="tag">&lt;/string></span>
+<span class="lineno"> 215 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"errors_empty_title"</span>>No errors recorded<span class="tag">&lt;/string></span>
+<span class="lineno"> 216 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"errors_empty_body"</span>>Problems caught by the app will appear here for 30 days.<span class="tag">&lt;/string></span>
+<span class="caretline"><span class="lineno"> 217 </span>  <span class="warning"><span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"errors_expires_in"</span>>Expires in %1$d days<span class="tag">&lt;/string></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 218 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"export_notice_title"</span>>Export contents<span class="tag">&lt;/string></span>
+<span class="lineno"> 219 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"export_notice_body"</span>>The ZIP contains a readable report, structured JSON data and a CSV of recent moves. File contents are never included. Folder paths are masked to file names unless you include them below. Nothing is uploaded — you choose where to share it.<span class="tag">&lt;/string></span>
+<span class="lineno"> 220 </span>  <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"export_notice_share"</span>>Export and share<span class="tag">&lt;/string></span></pre>
 
-<span class="location"><a href="../../src/main/res/values/strings.xml">../../src/main/res/values/strings.xml</a>:260</span>: <span class="message">Formatting %d followed by words ("files"): This should probably be a plural rather than a string</span><br /><pre class="errorlines">
-<span class="lineno"> 257 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_default_granularity"</span>>Default date folders<span class="tag">&lt;/string></span>
-<span class="lineno"> 258 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_confirm_apply"</span>>Confirm before applying<span class="tag">&lt;/string></span>
-<span class="lineno"> 259 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_batch_threshold"</span>>Large batch warning threshold<span class="tag">&lt;/string></span>
-<span class="caretline"><span class="lineno"> 260 </span>    <span class="warning"><span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_batch_threshold_value"</span>>%1$d files<span class="tag">&lt;/string></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 261 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_batch_files_label"</span>>Number of files<span class="tag">&lt;/string></span>
-<span class="lineno"> 262 </span>
-<span class="lineno"> 263 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_history"</span>>History<span class="tag">&lt;/string></span></pre>
+<span class="location"><a href="../../src/main/res/values/strings.xml">../../src/main/res/values/strings.xml</a>:259</span>: <span class="message">Formatting %d followed by words ("files"): This should probably be a plural rather than a string</span><br /><pre class="errorlines">
+<span class="lineno"> 256 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_default_granularity"</span>>Default date folders<span class="tag">&lt;/string></span>
+<span class="lineno"> 257 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_confirm_apply"</span>>Confirm before applying<span class="tag">&lt;/string></span>
+<span class="lineno"> 258 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_batch_threshold"</span>>Large batch warning threshold<span class="tag">&lt;/string></span>
+<span class="caretline"><span class="lineno"> 259 </span>    <span class="warning"><span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_batch_threshold_value"</span>>%1$d files<span class="tag">&lt;/string></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 260 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_batch_files_label"</span>>Number of files<span class="tag">&lt;/string></span>
+<span class="lineno"> 261 </span>
+<span class="lineno"> 262 </span>    <span class="tag">&lt;string</span><span class="attribute"> name</span>=<span class="value">"settings_history"</span>>History<span class="tag">&lt;/string></span></pre>
 
 </div>
 <div class="metadata"><div class="explanation" id="explanationPluralsCandidate" style="display: none;">
@@ -1058,14 +1114,14 @@ Dismiss</button>            </div>
 <span class="lineno">  76 </span>  <span class="keyword">val</span> pickFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
 </pre>
 
-<span class="location"><a href="../../src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt">../../src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt</a>:529</span>: <span class="message">Prefer <code>mutableIntStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
-<span class="lineno"> 526 </span>private <span class="keyword">fun</span> NameRulesEditor(vm: WizardViewModel) {
-<span class="lineno"> 527 </span>    <span class="keyword">var</span> keyword by rememberSaveable { mutableStateOf(<span class="string">""</span>) }
-<span class="lineno"> 528 </span>    <span class="keyword">var</span> folder by rememberSaveable { mutableStateOf(<span class="string">""</span>) }
-<span class="caretline"><span class="lineno"> 529 </span>    <span class="keyword">var</span> typeIndex by rememberSaveable { <span class="warning">mutableStateOf</span>(<span class="number">0</span>) }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 530 </span>
-<span class="lineno"> 531 </span>    SectionHeader(stringResource(R.string.wizard_name_rules))
-<span class="lineno"> 532 </span>    Column(verticalArrangement = Arrangement.spacedBy(<span class="number">8.d</span>p)) {
+<span class="location"><a href="../../src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt">../../src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt</a>:535</span>: <span class="message">Prefer <code>mutableIntStateOf</code> instead of <code>mutableStateOf</code></span><br /><pre class="errorlines">
+<span class="lineno"> 532 </span>private <span class="keyword">fun</span> NameRulesEditor(vm: WizardViewModel) {
+<span class="lineno"> 533 </span>    <span class="keyword">var</span> keyword by rememberSaveable { mutableStateOf(<span class="string">""</span>) }
+<span class="lineno"> 534 </span>    <span class="keyword">var</span> folder by rememberSaveable { mutableStateOf(<span class="string">""</span>) }
+<span class="caretline"><span class="lineno"> 535 </span>    <span class="keyword">var</span> typeIndex by rememberSaveable { <span class="warning">mutableStateOf</span>(<span class="number">0</span>) }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 536 </span>
+<span class="lineno"> 537 </span>    SectionHeader(stringResource(R.string.wizard_name_rules))
+<span class="lineno"> 538 </span>    Column(verticalArrangement = Arrangement.spacedBy(<span class="number">8.d</span>p)) {
 </pre>
 
 </div>
@@ -2754,22 +2810,6 @@ This check looks for implementations of <code>HostnameVerifier</code> whose <cod
 When using <code>enqueue()</code> for `PeriodicWorkRequest`s, you might end up enqueuing<br/>
 duplicate requests unintentionally. You should be using<br/>
 <code>enqueueUniquePeriodicWork</code> with an <code>ExistingPeriodicWorkPolicy.KEEP</code> instead.<br/><br/>
-<br/></div>
-</div>
-</div>
-<div class="issue">
-<div class="id">BatteryLife<div class="issueSeparator"></div>
-</div>
-<div class="metadata">Disabled By: Project lint.xml file<br/>
-<div class="explanation">
-This issue flags code that either<br/>
-* negatively affects battery life, or<br/>
-* uses APIs that have recently changed behavior to prevent background tasks from consuming memory and battery excessively.<br/>
-<br/>
-Generally, you should be using <code>WorkManager</code> instead.<br/>
-<br/>
-For more details on how to update your code, please see <a href="https://developer.android.com/topic/performance/background-optimization">https://developer.android.com/topic/performance/background-optimization</a><br/><div class="moreinfo">More info: <a href="https://developer.android.com/topic/performance/background-optimization">https://developer.android.com/topic/performance/background-optimization</a>
-</div><br/>
 <br/></div>
 </div>
 </div>

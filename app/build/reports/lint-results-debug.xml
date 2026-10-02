@@ -56,6 +56,24 @@
     </issue>
 
     <issue
+        id="BatteryLife"
+        severity="Warning"
+        message="Use of `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` violates the Play Store Content Policy regarding acceptable use cases, as described in https://developer.android.com/training/monitoring-device-state/doze-standby.html"
+        category="Correctness"
+        priority="5"
+        summary="Battery Life Issues"
+        explanation="This issue flags code that either&#xA;* negatively affects battery life, or&#xA;* uses APIs that have recently changed behavior to prevent background tasks from consuming memory and battery excessively.&#xA;&#xA;Generally, you should be using `WorkManager` instead.&#xA;&#xA;For more details on how to update your code, please see https://developer.android.com/topic/performance/background-optimization"
+        url="https://developer.android.com/topic/performance/background-optimization"
+        urls="https://developer.android.com/topic/performance/background-optimization"
+        errorLine1="                                val i = android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)"
+        errorLine2="                                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/home/HomeScreen.kt"
+            line="136"
+            column="90"/>
+    </issue>
+
+    <issue
         id="AndroidGradlePluginVersion"
         severity="Warning"
         message="A newer version of com.android.application than 8.7.3 is available: 9.4.1"
@@ -1023,7 +1041,7 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml"
-            line="179"
+            line="178"
             column="5"/>
     </issue>
 
@@ -1041,7 +1059,7 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml"
-            line="218"
+            line="217"
             column="5"/>
     </issue>
 
@@ -1059,7 +1077,7 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="/home/z/my-project/Sortfold/app/src/main/res/values/strings.xml"
-            line="260"
+            line="259"
             column="5"/>
     </issue>
 
@@ -1123,7 +1141,7 @@
         errorLine2="                                        ~~~~~~~~~~~~~~">
         <location
             file="/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt"
-            line="529"
+            line="535"
             column="41"/>
     </issue>
 

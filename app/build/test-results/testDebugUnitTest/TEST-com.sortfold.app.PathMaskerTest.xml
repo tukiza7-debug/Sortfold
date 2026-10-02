@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.sortfold.app.PathMaskerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:27:47" hostname="c-6abf6a90-14810412-840fa9da916c" time="0.012">
+<testsuite name="com.sortfold.app.PathMaskerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:45:53" hostname="c-6abf6a90-14810412-840fa9da916c" time="0.012">
   <properties/>
-  <testcase name="masks middle segments by default" classname="com.sortfold.app.PathMaskerTest" time="0.006"/>
+  <testcase name="masks middle segments by default" classname="com.sortfold.app.PathMaskerTest" time="0.01"/>
   <testcase name="handles paths without a storage root" classname="com.sortfold.app.PathMaskerTest" time="0.0"/>
   <testcase name="keeps full path when user opts in" classname="com.sortfold.app.PathMaskerTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>

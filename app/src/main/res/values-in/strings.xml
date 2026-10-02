@@ -148,7 +148,6 @@
     <string name="warn_low_storage">Penyimpanan hampir penuh. Pemindahan mungkin gagal jika ruang habis.</string>
     <string name="warn_insufficient">Penyimpanan tidak cukup untuk kumpulan ini. Pelaksanaan disekat.</string>
     <string name="warn_replacing">Beberapa file tujuan akan digantikan. Kandungannya akan hilang.</string>
-    <string name="warn_different_storage">Sumber dan tujuan berada di penyimpanan berbeza. File disalin kemudian dihapus, lebih lambat.</string>
     <string name="warn_storage_root">Anda memilih root penyimpanan. Lebih baik pilih folder khusus di dalamnya.</string>
     <string name="warn_app_private">Folder peribadi aplikasi tidak boleh diatur. Pilih folder biasa.</string>
     <string name="warn_system_folder">Folder sistem ini tidak aman untuk diatur semula. Pilih folder lain.</string>
@@ -292,4 +291,9 @@
     <string name="short_policy_skip">Lewati</string>
     <string name="short_policy_rename">Ubah nama</string>
     <string name="short_policy_replace">Ganti</string>
+    <string name="settings_naming_style">Gaya folder tanggal</string>
+    <string name="settings_naming_readable">Mudah dibaca</string>
+    <string name="battery_title">Tugas latar belakang dihentikan</string>
+    <string name="battery_body">Sistem menginterupsi tugas atur yang panjang. Anda dapat pengecualikan Sortfold dari pengoptimalan bateri agar dapat selesai. Ini opsional dan hanya ditawarkan setelah interupsi tersebut.</string>
+    <string name="battery_allow">Izinkan</string>
 </resources>

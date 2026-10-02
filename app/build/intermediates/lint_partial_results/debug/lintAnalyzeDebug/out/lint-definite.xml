@@ -450,12 +450,12 @@
         message="Formatting %d followed by words (&quot;files&quot;): This should probably be a plural rather than a string">
         <location
             file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
-            line="179"
+            line="178"
             column="5"
-            startOffset="11245"
-            endLine="179"
+            startOffset="11097"
+            endLine="178"
             endColumn="82"
-            endOffset="11322"/>
+            endOffset="11174"/>
     </incident>
 
     <incident
@@ -464,12 +464,12 @@
         message="Formatting %d followed by words (&quot;days&quot;): This should probably be a plural rather than a string">
         <location
             file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
-            line="218"
+            line="217"
             column="5"
-            startOffset="13457"
-            endLine="218"
+            startOffset="13309"
+            endLine="217"
             endColumn="67"
-            endOffset="13519"/>
+            endOffset="13371"/>
     </incident>
 
     <incident
@@ -478,12 +478,12 @@
         message="Formatting %d followed by words (&quot;files&quot;): This should probably be a plural rather than a string">
         <location
             file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
-            line="260"
+            line="259"
             column="5"
-            startOffset="16146"
-            endLine="260"
+            startOffset="15998"
+            endLine="259"
             endColumn="70"
-            endOffset="16211"/>
+            endOffset="16063"/>
     </incident>
 
     <incident
@@ -569,17 +569,17 @@
             priority="0">
             <range
                 file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/wizard/WizardScreen.kt"
-                startOffset="22173"
-                endOffset="22187"/>
+                startOffset="22401"
+                endOffset="22415"/>
         </fix-replace>
         <location
             file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/wizard/WizardScreen.kt"
-            line="529"
+            line="535"
             column="41"
-            startOffset="22173"
-            endLine="529"
+            startOffset="22401"
+            endLine="535"
             endColumn="55"
-            endOffset="22187"/>
+            endOffset="22415"/>
     </incident>
 
 </incidents>

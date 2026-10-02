@@ -18,6 +18,7 @@ import java.time.ZoneId
 data class SortConfig(
     val modes: Set<SortMode>,
     val dateGranularity: DateGranularity = DateGranularity.MONTH,
+    val dateStyleIso: Boolean = true,
     val nameRules: List<NameRule> = emptyList(),
     val duplicatePolicy: com.sortfold.app.core.model.DuplicatePolicy =
         com.sortfold.app.core.model.DuplicatePolicy.SKIP,
@@ -75,7 +76,7 @@ object RuleEngine {
             MediaType.VIDEO -> "Videos"
             MediaType.OTHER -> "Other"
         }
-        SortMode.DATE_TAKEN -> dateSegment(file.effectiveDateMillis, config.dateGranularity)
+        SortMode.DATE_TAKEN -> dateSegment(file.effectiveDateMillis, config.dateGranularity, iso = config.dateStyleIso)
         SortMode.SOURCE_APP -> SourceApp.fromPath(config.treePath).label
         SortMode.RESOLUTION -> ResolutionClass.of(file.width, file.height).label
         SortMode.SIZE -> SizeBucket.of(file.sizeBytes).label
@@ -83,11 +84,18 @@ object RuleEngine {
         SortMode.NAME_PATTERN -> firstMatchingRule(file.displayName, config.nameRules)?.targetFolder ?: ""
     }
 
-    fun dateSegment(epochMillis: Long, granularity: DateGranularity, zone: ZoneId = ZoneId.systemDefault()): String {
+    fun dateSegment(
+        epochMillis: Long,
+        granularity: DateGranularity,
+        zone: ZoneId = ZoneId.systemDefault(),
+        iso: Boolean = true,
+    ): String {
         val date: LocalDate = Instant.ofEpochMilli(epochMillis).atZone(zone).toLocalDate()
         return when (granularity) {
             DateGranularity.YEAR -> date.year.toString()
-            DateGranularity.MONTH -> "%04d-%02d".format(date.year, date.monthValue)
+            DateGranularity.MONTH ->
+                if (iso) "%04d-%02d".format(date.year, date.monthValue)
+                else date.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH) + " " + date.year
         }
     }
 

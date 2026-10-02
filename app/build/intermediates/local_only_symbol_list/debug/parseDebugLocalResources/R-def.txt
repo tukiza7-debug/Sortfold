@@ -39,6 +39,9 @@ string auto_rules_last_run
 string auto_rules_mode
 string auto_rules_run_now
 string auto_rules_summary
+string battery_allow
+string battery_body
+string battery_title
 string channel_done
 string channel_progress
 string channel_updates
@@ -204,6 +207,8 @@ string settings_dynamic_color
 string settings_dynamic_color_unavailable
 string settings_history
 string settings_language
+string settings_naming_readable
+string settings_naming_style
 string settings_notifications
 string settings_notifications_desc
 string settings_open_notif_settings
@@ -233,7 +238,6 @@ string update_up_to_date
 string warn_app_private
 string warn_batch_bytes
 string warn_batch_files
-string warn_different_storage
 string warn_insufficient
 string warn_low_storage
 string warn_replacing

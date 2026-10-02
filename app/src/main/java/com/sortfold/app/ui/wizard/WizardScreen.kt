@@ -29,7 +29,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -104,6 +103,9 @@ fun WizardScreen(container: AppContainer, expanded: Boolean, onExit: () -> Unit)
 
     val job by vm.job.collectAsStateWithLifecycle()
     val previewRows by vm.previewRows.collectAsStateWithLifecycle()
+    val settings by container.settingsRepository.settings.collectAsStateWithLifecycle(
+        initialValue = com.sortfold.app.data.prefs.AppSettings(),
+    )
 
     var showConfirm by rememberSaveable { mutableStateOf(false) }
     var showNotifRationale by rememberSaveable { mutableStateOf(false) }
@@ -155,7 +157,8 @@ fun WizardScreen(container: AppContainer, expanded: Boolean, onExit: () -> Unit)
                     when (vm.step) {
                         WizardStep.FOLDER -> vm.goToModes()
                         WizardStep.MODES -> vm.buildPreview(context)
-                        WizardStep.PREVIEW -> showConfirm = true
+                        WizardStep.PREVIEW ->
+                            if (settings.confirmBeforeApply) showConfirm = true else startApplyFlow()
                         else -> {}
                     }
                 })
@@ -324,6 +327,13 @@ private fun FolderStep(vm: WizardViewModel, context: Context) {
         if (uri != null) vm.setFolder(uri, context)
     }
 
+    // "Default destination folder" setting: preselect and scan it once.
+    LaunchedEffect(Unit) {
+        vm.consumePendingDefaultTree()?.let { tag ->
+            runCatching { android.net.Uri.parse(tag) }.getOrNull()?.let { vm.setFolder(it, context) }
+        }
+    }
+
     val mediaPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { result ->
@@ -447,10 +457,7 @@ private fun ModesStep(vm: WizardViewModel) {
                 ) {
                     Checkbox(
                         checked = mode in vm.selectedModes,
-                        onCheckedChange = { checked ->
-                            vm.selectedModes = if (checked) vm.selectedModes + mode else vm.selectedModes - mode
-                            vm.refreshLivePreview()
-                        },
+                        onCheckedChange = { checked -> vm.toggleMode(mode, checked) },
                     )
                     Column {
                         Text(modeLabel(mode))
@@ -474,12 +481,12 @@ private fun ModesStep(vm: WizardViewModel) {
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 SegmentedButton(
                     selected = vm.granularity == DateGranularity.YEAR,
-                    onClick = { vm.granularity = DateGranularity.YEAR; vm.refreshLivePreview() },
+                    onClick = { vm.chooseGranularity(DateGranularity.YEAR) },
                     shape = SegmentedButtonDefaults.itemShape(0, 2),
                 ) { Text(stringResource(R.string.wizard_by_year)) }
                 SegmentedButton(
                     selected = vm.granularity == DateGranularity.MONTH,
-                    onClick = { vm.granularity = DateGranularity.MONTH; vm.refreshLivePreview() },
+                    onClick = { vm.chooseGranularity(DateGranularity.MONTH) },
                     shape = SegmentedButtonDefaults.itemShape(1, 2),
                 ) { Text(stringResource(R.string.wizard_by_month)) }
             }
@@ -495,7 +502,7 @@ private fun ModesStep(vm: WizardViewModel) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = vm.policy == policy,
-                        onClick = { vm.policy = policy },
+                        onClick = { vm.choosePolicy(policy) },
                     )
                     Text(duplicateLabel(policy))
                 }
@@ -514,10 +521,9 @@ private fun SuggestionCard(vm: WizardViewModel) {
                 stringResource(R.string.wizard_suggestion_mode, modeLabel(suggestion.mode)),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
-            TextButton(onClick = {
-                vm.selectedModes = setOf(suggestion.mode)
-                vm.refreshLivePreview()
-            }) { Text(stringResource(R.string.wizard_apply_suggestion)) }
+            TextButton(onClick = { vm.setModes(setOf(suggestion.mode)) }) {
+                Text(stringResource(R.string.wizard_apply_suggestion))
+            }
         }
     }
 }
@@ -836,7 +842,6 @@ private fun warningLabel(key: String): String = stringResource(
         "low_storage" -> R.string.warn_low_storage
         "insufficient_storage" -> R.string.warn_insufficient
         "replacing" -> R.string.warn_replacing
-        "different_storage" -> R.string.warn_different_storage
         "storage_root" -> R.string.warn_storage_root
         "app_private" -> R.string.warn_app_private
         "system_folder" -> R.string.warn_system_folder
