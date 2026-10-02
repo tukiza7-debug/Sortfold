@@ -1,13 +1,19 @@
 package com.sortfold.app.ui.wizard
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,17 +30,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sortfold.app.AppContainer
+import com.sortfold.app.data.db.MoveLogEntity
 import com.sortfold.app.R
 import com.sortfold.app.data.db.SortJobEntity
 import com.sortfold.app.ui.common.Formatters
 import com.sortfold.app.ui.common.SectionHeader
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import com.sortfold.app.ui.theme.LocalReducedMotion
+import com.sortfold.app.ui.theme.Motion
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import androidx.compose.animation.core.Spring
 
 /** Loading / ready state so a slow Room read never flashes "not found". */
 private sealed interface JobUi {
@@ -59,6 +73,17 @@ fun JobResultScreen(container: AppContainer, jobId: Long, onDone: () -> Unit) {
     var undoBusy by rememberSaveable { mutableStateOf(false) }
     var undoResult by rememberSaveable { mutableStateOf<Pair<Int, Int>?>(null) }
 
+    // Collapsible skipped/failed lists with explicit reasons (1.1.0 Part B4).
+    val problems by remember(jobId) {
+        flow {
+            val skipped = container.database.moveLogDao().byJobStatusPaged(jobId, "SKIPPED", 50, 0)
+            val failed = container.database.moveLogDao().byJobStatusPaged(jobId, "FAILED", 50, 0)
+            emit(skipped to failed)
+        }
+    }.collectAsStateWithLifecycle(initialValue = emptyList<MoveLogEntity>() to emptyList<MoveLogEntity>())
+    var showSkipped by rememberSaveable { mutableStateOf(false) }
+    var showFailed by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.result_screen_title)) })
@@ -81,6 +106,7 @@ fun JobResultScreen(container: AppContainer, jobId: Long, onDone: () -> Unit) {
                     if (j == null) {
                         Text(stringResource(R.string.job_not_found))
                     } else {
+                        OutcomeIcon(status = j.status)
                         Text(jobStatusLabel(j.status), style = MaterialTheme.typography.headlineSmall)
                         Card {
                             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -107,6 +133,23 @@ fun JobResultScreen(container: AppContainer, jobId: Long, onDone: () -> Unit) {
                                     }
                                 }
                             }
+                        }
+
+                        if (problems.first.isNotEmpty()) {
+                            ProblemSection(
+                                title = stringResource(R.string.preview_skip_count) + " (" + problems.first.size + ")",
+                                rows = problems.first,
+                                expanded = showSkipped,
+                                onToggle = { showSkipped = !showSkipped },
+                            )
+                        }
+                        if (problems.second.isNotEmpty()) {
+                            ProblemSection(
+                                title = stringResource(R.string.result_failed_title) + " (" + problems.second.size + ")",
+                                rows = problems.second,
+                                expanded = showFailed,
+                                onToggle = { showFailed = !showFailed },
+                            )
                         }
 
                         if (j.status in setOf("PAUSED", "PARTIAL")) {
@@ -149,6 +192,78 @@ fun JobResultScreen(container: AppContainer, jobId: Long, onDone: () -> Unit) {
             }
         }
     }
+}
+
+/** Collapsible list of skipped/failed rows with the stored reason. */
+@Composable
+private fun ProblemSection(
+    title: String,
+    rows: List<MoveLogEntity>,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+) {
+    Card(Modifier.fillMaxWidth()) {
+        Column {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            ) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                androidx.compose.material3.IconButton(onClick = onToggle) {
+                    androidx.compose.material3.Icon(
+                        if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        contentDescription = stringResource(R.string.action_close),
+                    )
+                }
+            }
+            if (expanded) {
+                rows.forEach { row ->
+                    Text(
+                        row.displayName + (row.detail?.let { " — $it" } ?: ""),
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Animated outcome icon: springs in on arrival, picks the glyph from the job
+ * status. Static instantly when reduced motion is on.
+ */
+@Composable
+private fun OutcomeIcon(status: String, modifier: Modifier = Modifier) {
+    val reduced = LocalReducedMotion.current
+    val (image, tint, description) = when (status) {
+        "DONE" -> Triple(Icons.Filled.CheckCircle, MaterialTheme.colorScheme.primary, stringResource(R.string.result_done_title))
+        "FAILED", "CANCELLED" -> Triple(Icons.Filled.Error, MaterialTheme.colorScheme.error, stringResource(R.string.result_failed_title))
+        else -> Triple(Icons.Filled.Warning, MaterialTheme.colorScheme.tertiary, stringResource(R.string.result_partial_title))
+    }
+    var started by remember { mutableStateOf(reduced) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { started = true }
+    val scale by animateFloatAsState(
+        targetValue = if (started) 1f else 0.4f,
+        animationSpec = if (reduced) {
+            androidx.compose.animation.core.tween(1)
+        } else {
+            Motion.entrySpring<Float>()
+        },
+        label = "outcome-scale",
+    )
+    androidx.compose.material3.Icon(
+        image,
+        contentDescription = description,
+        tint = tint,
+        modifier = modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .size(56.dp),
+    )
 }
 
 @Composable

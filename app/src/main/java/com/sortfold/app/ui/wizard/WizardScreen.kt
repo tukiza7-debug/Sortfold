@@ -15,10 +15,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -36,12 +42,15 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.material3.Scaffold
@@ -88,6 +97,9 @@ import com.sortfold.app.ui.home.simpleFactory
 import com.sortfold.app.ui.permissions.MediaPermissions
 import com.sortfold.app.ui.theme.LocalReducedMotion
 import com.sortfold.app.ui.theme.Motion
+import com.sortfold.app.ui.theme.pressable
+import com.sortfold.app.ui.theme.rememberHaptics
+import com.sortfold.app.ui.theme.rememberPressInteraction
 
 @Composable
 fun jobStatusLabel(status: String): String = stringResource(
@@ -125,6 +137,7 @@ fun WizardScreen(
     var showConfirm by rememberSaveable { mutableStateOf(false) }
     var showNotifRationale by rememberSaveable { mutableStateOf(false) }
     var pendingApply by rememberSaveable { mutableStateOf(false) }
+    val haptics = rememberHaptics()
 
     val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         if (pendingApply) {
@@ -143,6 +156,7 @@ fun WizardScreen(
     }
 
     fun confirmThenRequest() {
+        haptics() // light confirmation tick on the primary action (Part B5)
         showConfirm = false
         startApplyFlow()
     }
@@ -279,6 +293,7 @@ fun WizardScreen(
     }
 }
 
+@OptIn(androidx.compose.animation.ExperimentalSharedTransitionApi::class)
 @Composable
 private fun StepContent(
     vm: WizardViewModel,
@@ -290,29 +305,107 @@ private fun StepContent(
     val reduced = LocalReducedMotion.current
     val layoutDir = LocalLayoutDirection.current
     // Shared-axis X between wizard steps; forward/back follows the direction of travel.
-    AnimatedContent(
-        targetState = vm.step,
-        transitionSpec = {
-            val dir = if (layoutDir == LayoutDirection.Ltr) 1 else -1
-            val forward = targetState.ordinal >= initialState.ordinal
-            if (reduced) {
-                (fadeIn(tween(1))) togetherWith (fadeOut(tween(1)))
-            } else if (forward) {
-                (slideInHorizontally(Motion.enter()) { it / 4 * dir } + fadeIn(Motion.enter())) togetherWith
-                    (slideOutHorizontally(Motion.exit()) { -it / 4 * dir } + fadeOut(Motion.exit()))
-            } else {
-                (slideInHorizontally(Motion.enter()) { -it / 4 * dir } + fadeIn(Motion.enter())) togetherWith
-                    (slideOutHorizontally(Motion.exit()) { it / 4 * dir } + fadeOut(Motion.exit()))
+    // The stepper header is a shared element: it glides between steps instead
+    // of being replaced (reduced motion keeps a plain cross-fade).
+    SharedTransitionLayout {
+        AnimatedContent(
+            targetState = vm.step,
+            transitionSpec = {
+                val dir = if (layoutDir == LayoutDirection.Ltr) 1 else -1
+                val forward = targetState.ordinal >= initialState.ordinal
+                if (reduced) {
+                    (fadeIn(tween(1))) togetherWith (fadeOut(tween(1)))
+                } else if (forward) {
+                    (slideInHorizontally(Motion.enter()) { it / 4 * dir } + fadeIn(Motion.enter())) togetherWith
+                        (slideOutHorizontally(Motion.exit()) { -it / 4 * dir } + fadeOut(Motion.exit()))
+                } else {
+                    (slideInHorizontally(Motion.enter()) { -it / 4 * dir } + fadeIn(Motion.enter())) togetherWith
+                        (slideOutHorizontally(Motion.exit()) { it / 4 * dir } + fadeOut(Motion.exit()))
+                }
+            },
+            label = "wizard-step",
+        ) { step ->
+            Column {
+                val shared = rememberSharedContentState(key = "wizard-stepper")
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .then(
+                            if (reduced) Modifier else Modifier.sharedBounds(
+                                sharedContentState = shared,
+                                animatedVisibilityScope = this@AnimatedContent,
+                            ),
+                        ),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    WizardStepper(current = step, onStepSelected = { target ->
+                        // Allow jumping between the three planning steps only.
+                        when (target) {
+                            WizardStep.FOLDER -> { vm.goBackToFolder() }
+                            WizardStep.MODES -> if (vm.step == WizardStep.PREVIEW) vm.goBack() else vm.goToModes()
+                            else -> {}
+                        }
+                    })
+                }
+                when (step) {
+                    WizardStep.FOLDER -> FolderStep(vm, context, onOpenErrorLibrary)
+                    WizardStep.MODES -> ModesStep(vm)
+                    WizardStep.PREVIEW -> PreviewStep(vm, previewRows, context)
+                    WizardStep.APPLY -> ApplyStep(vm, job)
+                    WizardStep.RESULT -> ResultStep(vm, job, context)
+                }
             }
-        },
-        label = "wizard-step",
-    ) { step ->
-        when (step) {
-            WizardStep.FOLDER -> FolderStep(vm, context, onOpenErrorLibrary)
-            WizardStep.MODES -> ModesStep(vm)
-            WizardStep.PREVIEW -> PreviewStep(vm, previewRows, context)
-            WizardStep.APPLY -> ApplyStep(vm, job)
-            WizardStep.RESULT -> ResultStep(vm, job, context)
+        }
+    }
+}
+
+/**
+ * Visual 1-2-3 stepper for the three planning steps. Completed steps get a
+ * check, the current step is emphasized; Apply/Result are outside the flow.
+ */
+@Composable
+private fun WizardStepper(current: WizardStep, onStepSelected: (WizardStep) -> Unit) {
+    val steps = listOf(
+        WizardStep.FOLDER to Icons.Filled.Folder,
+        WizardStep.MODES to Icons.AutoMirrored.Filled.List,
+        WizardStep.PREVIEW to Icons.Filled.Visibility,
+    )
+    val currentIndex = steps.indexOfFirst { it.first == current }
+    steps.forEachIndexed { i, (step, icon) ->
+        val done = i < currentIndex
+        val active = i == currentIndex
+        val color = when {
+            active -> MaterialTheme.colorScheme.primary
+            done -> MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+        }
+        val interaction = rememberPressInteraction()
+        Row(
+            Modifier
+                .clip(CircleShape)
+                .then(if (active || done) Modifier.clickable(interactionSource = interaction, indication = null, onClick = { onStepSelected(step) }) else Modifier)
+                .pressable(interaction)
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            if (done) {
+                Icon(Icons.Filled.Check, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
+            } else {
+                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
+            }
+            Text(
+                stringResource(
+                    when (step) {
+                        WizardStep.FOLDER -> R.string.wizard_step_folder
+                        WizardStep.MODES -> R.string.wizard_step_modes
+                        else -> R.string.wizard_step_preview
+                    },
+                ),
+                style = MaterialTheme.typography.labelMedium,
+                color = color,
+            )
         }
     }
 }

@@ -336,4 +336,9 @@
     <string name="pattern_prefix">Bermula dengan</string>
     <string name="pattern_suffix">Berakhir dengan</string>
     <string name="pattern_contains">Mengandungi</string>
+    <string name="wizard_step_folder">Folder</string>
+    <string name="wizard_step_modes">Isih</string>
+    <string name="wizard_step_preview">Pratonton</string>
+    <string name="home_files_sorted">Fail disusun</string>
+    <string name="history_search_hint">Cari operasi…</string>
 </resources>

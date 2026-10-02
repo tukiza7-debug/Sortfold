@@ -357,4 +357,9 @@
     <string name="pattern_prefix">Starts with</string>
     <string name="pattern_suffix">Ends with</string>
     <string name="pattern_contains">Contains</string>
+    <string name="wizard_step_folder">Folder</string>
+    <string name="wizard_step_modes">Sort</string>
+    <string name="wizard_step_preview">Preview</string>
+    <string name="home_files_sorted">Files sorted</string>
+    <string name="history_search_hint">Search operations…</string>
 </resources>

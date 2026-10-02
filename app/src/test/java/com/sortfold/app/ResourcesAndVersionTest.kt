@@ -153,6 +153,7 @@ class TranslationQualityTest {
             "severity_info", "preview_move_to", "errors_group_count", "notif_progress_x_of_y",
             "mode_extension_desc",  // a list of file extensions: language-neutral
             "history_auto_tag",  // "Auto" is natural in both Indonesian and Malay
+            "wizard_step_folder",  // "Folder" is the natural Indonesian/Malay word too
         )
 
         listOf("values-in", "values-ms", "values-ar", "values-zh-rCN").forEach { locale ->

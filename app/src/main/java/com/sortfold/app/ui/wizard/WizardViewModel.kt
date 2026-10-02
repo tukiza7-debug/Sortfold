@@ -192,6 +192,11 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
+    /** Stepper jump back to the folder step. */
+    fun goBackToFolder() {
+        step = WizardStep.FOLDER
+    }
+
     fun setFolder(uri: Uri, context: Context) {
         runCatching {
             context.contentResolver.takePersistableUriPermission(

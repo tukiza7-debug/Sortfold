@@ -337,4 +337,9 @@
     <string name="pattern_prefix">Diawali dengan</string>
     <string name="pattern_suffix">Diakhiri dengan</string>
     <string name="pattern_contains">Berisi</string>
+    <string name="wizard_step_folder">Folder</string>
+    <string name="wizard_step_modes">Sortir</string>
+    <string name="wizard_step_preview">Pratinjau</string>
+    <string name="home_files_sorted">File tersortir</string>
+    <string name="history_search_hint">Cari operasi…</string>
 </resources>

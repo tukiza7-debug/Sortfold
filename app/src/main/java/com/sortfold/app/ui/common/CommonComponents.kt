@@ -9,14 +9,17 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,10 +33,12 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.sortfold.app.ui.theme.LocalReducedMotion
 import com.sortfold.app.ui.theme.Motion
@@ -196,5 +201,63 @@ fun ErrorState(
                 content = actions,
             )
         }
+    }
+}
+
+/**
+ * Skeleton shimmer used instead of text spinners while Home, Wizard and
+ * History load (1.1.0 Part B2). Renders a static tint when reduced motion
+ * is on — the shimmer is the only thing removed.
+ */
+@Composable
+fun SkeletonRow(
+    modifier: Modifier = Modifier,
+    height: Dp = 56.dp,
+) {
+    val reduced = LocalReducedMotion.current
+    val base = MaterialTheme.colorScheme.surfaceVariant
+    val highlight = MaterialTheme.colorScheme.surface
+    val transition = rememberInfiniteTransition(label = "skeleton")
+    val alpha by transition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "shimmer",
+    )
+    Surface(
+        color = if (reduced) base else lerp(base, highlight, alpha),
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier.fillMaxWidth().height(height),
+    ) {}
+}
+
+/** List entry helper: spring + alpha with a capped stagger and reduced path. */
+@Composable
+fun StaggeredEntry(
+    index: Int,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val reduced = LocalReducedMotion.current
+    var appeared by remember { mutableStateOf(reduced) }
+    LaunchedEffect(Unit) {
+        if (!appeared) {
+            delay(Motion.staggerDelayMs(index).toLong())
+            appeared = true
+        }
+    }
+    AnimatedVisibility(
+        visible = appeared,
+        modifier = modifier,
+        enter = if (reduced) {
+            fadeIn(tween(1))
+        } else {
+            fadeIn(Motion.small()) + slideInVertically(Motion.entrySpring()) { it / 8 }
+        },
+    ) {
+        content()
     }
 }

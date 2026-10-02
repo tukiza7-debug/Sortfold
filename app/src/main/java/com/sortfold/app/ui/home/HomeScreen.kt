@@ -20,6 +20,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -42,6 +43,8 @@ import com.sortfold.app.R
 import com.sortfold.app.data.db.SortJobEntity
 import com.sortfold.app.ui.common.EmptyState
 import com.sortfold.app.ui.common.SectionHeader
+import com.sortfold.app.ui.common.SkeletonRow
+import com.sortfold.app.ui.common.StaggeredEntry
 import com.sortfold.app.ui.theme.Spacing
 import com.sortfold.app.ui.wizard.jobStatusLabel
 import kotlinx.coroutines.flow.SharingStarted
@@ -107,43 +110,66 @@ fun HomeScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(Spacing.lg),
             ) {
-                item {
-                    Text(
-                        stringResource(R.string.home_subtitle),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                item(key = "hero") {
+                    // Hero: one-line value proposition + the numbers that matter.
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                        Text(
+                            stringResource(R.string.home_subtitle),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (settings == null) {
+                            SkeletonRow(height = 64.dp)
+                        } else {
+                            val jobsSorted = jobs.sumOf { it.doneFiles }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.lg),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                HeroStat(
+                                    value = "$jobsSorted",
+                                    label = stringResource(R.string.home_files_sorted),
+                                )
+                                HeroStat(
+                                    value = "${jobs.size}",
+                                    label = stringResource(R.string.home_recent),
+                                )
+                            }
+                        }
+                    }
                 }
 
                 // Crash banner: "the app closed unexpectedly" from the last launch.
                 if (settings?.crashedLastRun == true) {
                     item(key = "crash") {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                        ) {
-                            Column(Modifier.padding(Spacing.lg), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                                ) {
-                                    Icon(
-                                        Icons.Filled.BugReport,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onErrorContainer,
-                                    )
+                        StaggeredEntry(index = 0) {
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                            ) {
+                                Column(Modifier.padding(Spacing.lg), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.BugReport,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                                        )
+                                        Text(
+                                            stringResource(R.string.home_crash_title),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                        )
+                                    }
                                     Text(
-                                        stringResource(R.string.home_crash_title),
-                                        style = MaterialTheme.typography.titleMedium,
+                                        stringResource(R.string.home_crash_body),
                                         color = MaterialTheme.colorScheme.onErrorContainer,
                                     )
-                                }
-                                Text(
-                                    stringResource(R.string.home_crash_body),
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                )
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                                    TextButton(onClick = onOpenErrors) { Text(stringResource(R.string.home_crash_view)) }
-                                    TextButton(onClick = { vm.acknowledgeCrash() }) { Text(stringResource(R.string.action_dismiss)) }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                                        TextButton(onClick = onOpenErrors) { Text(stringResource(R.string.home_crash_view)) }
+                                        TextButton(onClick = { vm.acknowledgeCrash() }) { Text(stringResource(R.string.action_dismiss)) }
+                                    }
                                 }
                             }
                         }
@@ -153,28 +179,38 @@ fun HomeScreen(
                 // Battery exemption is ONLY offered after the system killed a long job.
                 if (settings?.jobKilledBySystem == true) {
                     item(key = "battery") {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                        ) {
-                            Column(Modifier.padding(Spacing.lg), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                                Text(stringResource(R.string.battery_title), style = MaterialTheme.typography.titleMedium)
-                                Text(
-                                    stringResource(R.string.battery_body),
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                )
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                                    TextButton(onClick = {
-                                        val i = android.content.Intent(
-                                            android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                                        ).setData(android.net.Uri.parse("package:${context.packageName}"))
-                                        runCatching { context.startActivity(i) }
-                                    }) { Text(stringResource(R.string.battery_allow)) }
-                                    TextButton(onClick = { vm.dismissBatteryOffer() }) {
-                                        Text(stringResource(R.string.action_dismiss))
+                        StaggeredEntry(index = 1) {
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                            ) {
+                                Column(Modifier.padding(Spacing.lg), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                                    Text(stringResource(R.string.battery_title), style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        stringResource(R.string.battery_body),
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    )
+                                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                                        TextButton(onClick = {
+                                            val i = android.content.Intent(
+                                                android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                            ).setData(android.net.Uri.parse("package:${context.packageName}"))
+                                            runCatching { context.startActivity(i) }
+                                        }) { Text(stringResource(R.string.battery_allow)) }
+                                        TextButton(onClick = { vm.dismissBatteryOffer() }) {
+                                            Text(stringResource(R.string.action_dismiss))
+                                        }
                                     }
                                 }
                             }
                         }
+                    }
+                }
+
+                // Live job card: while anything is RUNNING/PAUSED the user sees
+                // animated progress right on the Home screen.
+                jobs.firstOrNull { it.status == "RUNNING" || it.status == "PAUSED" }?.let { live ->
+                    item(key = "live-${live.id}") {
+                        LiveJobCard(job = live, onClick = { onOpenJob(live.id) })
                     }
                 }
 
@@ -191,7 +227,10 @@ fun HomeScreen(
 
                 item(key = "recent-header") { SectionHeader(stringResource(R.string.home_recent)) }
 
-                if (jobs.isEmpty()) {
+                if (settings == null) {
+                    item(key = "recent-skeleton") { SkeletonRow() }
+                    item(key = "recent-skeleton2") { SkeletonRow() }
+                } else if (jobs.isEmpty()) {
                     item(key = "recent-empty") {
                         EmptyState(
                             title = stringResource(R.string.home_empty_title),
@@ -204,6 +243,49 @@ fun HomeScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+/** Big-number hero stat, used on the Home header. */
+@Composable
+private fun HeroStat(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(value, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+        )
+    }
+}
+
+/** Card with animated determinate progress for a running or paused job. */
+@Composable
+private fun LiveJobCard(job: SortJobEntity, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
+        Column(Modifier.padding(Spacing.lg), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            Text(
+                jobStatusLabel(job.status),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            LinearProgressIndicator(
+                progress = {
+                    if (job.totalFiles > 0) job.doneFiles.toFloat() / job.totalFiles else 0f
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                pluralStringResource(R.plurals.job_files_done, job.totalFiles, job.doneFiles, job.totalFiles),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
         }
     }
 }

@@ -89,6 +89,20 @@ object Spacing {
     val maxContentWidth = 720.dp
 }
 
+/** The one elevation scale: card < raised card < dialog/FAB. */
+object Elevation {
+    val card = 1.dp
+    val raised = 3.dp
+    val overlay = 6.dp
+}
+
+/** The one shape scale, mirrored by SortfoldShapes below. */
+object ShapeScale {
+    val small = 8.dp
+    val medium = 12.dp
+    val large = 16.dp
+}
+
 private val SortfoldTypography = Typography().run {
     copy(
         headlineSmall = headlineSmall.copy(fontWeight = FontWeight.SemiBold, fontSize = 24.sp),
@@ -99,9 +113,9 @@ private val SortfoldTypography = Typography().run {
 }
 
 private val SortfoldShapes = Shapes(
-    small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp),
+    small = RoundedCornerShape(ShapeScale.small),
+    medium = RoundedCornerShape(ShapeScale.medium),
+    large = RoundedCornerShape(ShapeScale.large),
 )
 
 @Composable

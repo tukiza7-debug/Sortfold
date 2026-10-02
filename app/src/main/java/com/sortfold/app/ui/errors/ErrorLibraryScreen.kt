@@ -290,12 +290,6 @@ fun ErrorLibraryScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showExportNotice = true }) {
-                        Icon(
-                            Icons.Filled.IosShare,
-                            contentDescription = stringResource(R.string.errors_export),
-                        )
-                    }
                     IconButton(onClick = { confirmClear = true }) {
                         Icon(
                             Icons.Filled.Delete,
@@ -303,6 +297,15 @@ fun ErrorLibraryScreen(
                         )
                     }
                 },
+            )
+        },
+        floatingActionButton = {
+            androidx.compose.material3.ExtendedFloatingActionButton(
+                onClick = { showExportNotice = true },
+                icon = {
+                    Icon(Icons.Filled.IosShare, contentDescription = null)
+                },
+                text = { Text(stringResource(R.string.errors_export)) },
             )
         },
     ) { padding ->
@@ -347,7 +350,7 @@ fun ErrorLibraryScreen(
                         start = Spacing.lg,
                         end = Spacing.lg,
                         top = Spacing.sm,
-                        bottom = Spacing.lg,
+                        bottom = Spacing.xxl + Spacing.xxl, // clears the export FAB
                     ),
                     verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                 ) {
@@ -355,13 +358,16 @@ fun ErrorLibraryScreen(
                     byDay.forEach { (day, list) ->
                         item(key = "day-$day") { SectionHeader(day) }
                         items(list, key = { ErrorsViewModel.groupKey(it) }) { group ->
-                            ErrorGroupCard(
-                                group = group,
-                                count = group.count,
-                                maskedMessage = PathMasker.maskText(group.message, includeFullPaths),
-                                onClick = { onOpenDetail(group.latestId) },
-                                modifier = Modifier.animateItem(),
-                            )
+                            val staggerIndex = list.indexOf(group).coerceAtMost(4)
+                            com.sortfold.app.ui.common.StaggeredEntry(index = staggerIndex) {
+                                ErrorGroupCard(
+                                    group = group,
+                                    count = group.count,
+                                    maskedMessage = PathMasker.maskText(group.message, includeFullPaths),
+                                    onClick = { onOpenDetail(group.latestId) },
+                                    modifier = Modifier.animateItem(),
+                                )
+                            }
                         }
                     }
                 }

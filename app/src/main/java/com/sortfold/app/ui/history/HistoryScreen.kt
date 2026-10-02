@@ -8,14 +8,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -29,6 +34,7 @@ import com.sortfold.app.AppContainer
 import com.sortfold.app.R
 import com.sortfold.app.data.db.SortJobEntity
 import com.sortfold.app.ui.common.EmptyState
+import com.sortfold.app.ui.common.StaggeredEntry
 import com.sortfold.app.ui.home.simpleFactory
 import com.sortfold.app.ui.wizard.jobStatusLabel
 import kotlinx.coroutines.flow.SharingStarted
@@ -48,38 +54,66 @@ fun HistoryScreen(
     bottomBar: @Composable () -> Unit = {},
 ) {
     val vm: HistoryViewModel = viewModel(factory = simpleFactory { HistoryViewModel(container) })
-    val jobs by vm.jobs.collectAsStateWithLifecycle()
+    val allJobs by vm.jobs.collectAsStateWithLifecycle()
+    var query by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
+
+    // Live search: filter by the localized status label, auto tag or date text.
+    val jobs = allJobs.filter { job ->
+        val q = query.trim()
+        q.isEmpty() ||
+            jobStatusLabel(job.status).contains(q, ignoreCase = true) ||
+            job.isAuto && q.startsWith("a", ignoreCase = true) ||
+            com.sortfold.app.ui.common.Formatters.date(job.createdAt).contains(q, ignoreCase = true)
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.history_title)) }) },
         bottomBar = bottomBar,
     ) { padding ->
-        if (jobs.isEmpty()) {
-            Column(Modifier.padding(padding)) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                placeholder = { Text(stringResource(R.string.history_search_hint)) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = com.sortfold.app.ui.theme.Spacing.lg, vertical = com.sortfold.app.ui.theme.Spacing.sm),
+            )
+            if (jobs.isEmpty()) {
                 EmptyState(
                     title = stringResource(R.string.history_empty_title),
                     description = stringResource(R.string.history_empty_body),
+                    modifier = Modifier.weight(1f),
                 )
-            }
-        } else {
-            LazyColumn(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                    start = com.sortfold.app.ui.theme.Spacing.lg,
-                    end = com.sortfold.app.ui.theme.Spacing.lg,
-                    top = com.sortfold.app.ui.theme.Spacing.md,
-                    bottom = com.sortfold.app.ui.theme.Spacing.lg,
-                ),
-                verticalArrangement = Arrangement.spacedBy(com.sortfold.app.ui.theme.Spacing.sm),
-            ) {
-                items(jobs, key = { it.id }) { job ->
-                    HistoryCard(
-                        job,
-                        onClick = { onOpenJob(job.id) },
-                        modifier = Modifier.animateItem(),
-                    )
+            } else {
+                LazyColumn(
+                    Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                        start = com.sortfold.app.ui.theme.Spacing.lg,
+                        end = com.sortfold.app.ui.theme.Spacing.lg,
+                        top = com.sortfold.app.ui.theme.Spacing.md,
+                        bottom = com.sortfold.app.ui.theme.Spacing.lg,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(com.sortfold.app.ui.theme.Spacing.sm),
+                ) {
+                    items(jobs, key = { it.id }) { job ->
+                        val index = jobs.indexOf(job).coerceAtMost(9)
+                        StaggeredEntry(index = index) {
+                            HistoryCard(
+                                job,
+                                onClick = { onOpenJob(job.id) },
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -346,4 +346,9 @@
     <string name="pattern_prefix">يبدأ بـ</string>
     <string name="pattern_suffix">ينتهي بـ</string>
     <string name="pattern_contains">يحتوي على</string>
+    <string name="wizard_step_folder">المجلد</string>
+    <string name="wizard_step_modes">الفرز</string>
+    <string name="wizard_step_preview">المعاينة</string>
+    <string name="home_files_sorted">ملفات مرتبة</string>
+    <string name="history_search_hint">البحث في العمليات…</string>
 </resources>
