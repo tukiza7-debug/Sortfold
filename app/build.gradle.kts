@@ -14,14 +14,14 @@ val ciVersionCode: Int? = (project.findProperty("versionCode") as String?)?.toIn
 
 android {
     namespace = "com.sortfold.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.sortfold.app"
         minSdk = 29
-        targetSdk = 35
-        versionCode = ciVersionCode ?: 1
-        versionName = ciVersionName ?: "1.0.1"
+        targetSdk = 36
+        versionCode = ciVersionCode ?: 2
+        versionName = ciVersionName ?: "1.1.0"
 
         // Repo injected by CI (-PgithubRepo=owner/name). A blank value would
         // silently break the in-app update check, so the build fails instead.
@@ -32,15 +32,17 @@ android {
         buildConfigField("String", "GITHUB_REPO", "\"$repo\"")
 
         // Short git sha: identifies the exact build in error reports.
+        // providers.exec is configuration-cache compatible (no raw ProcessBuilder).
         val sha = try {
-            val p = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
-                .directory(rootProject.projectDir)
-                .start()
-            p.inputStream.bufferedReader().readText().trim().also { p.waitFor() }
+            providers.exec {
+                commandLine("git", "rev-parse", "--short", "HEAD")
+                workingDir(rootProject.projectDir)
+                isIgnoreExitValue = true
+            }.standardOutput.asText.get().trim().ifBlank { "dev" }
         } catch (_: Exception) {
-            ""
+            "dev"
         }
-        buildConfigField("String", "GIT_SHA", "\"${sha.ifBlank { "dev" }}\"")
+        buildConfigField("String", "GIT_SHA", "\"$sha\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -97,9 +99,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs = freeCompilerArgs + listOf("-opt-in=kotlin.RequiresOptIn")
+    // kotlinOptions{} is removed in newer Kotlin; the Kotlin 2.2 DSL is the supported form.
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+        }
     }
     buildFeatures {
         compose = true

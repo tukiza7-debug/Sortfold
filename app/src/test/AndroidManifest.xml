@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Unit tests run on the JVM; Robolectric needs a launchable ComponentActivity
-         for the Compose test rule. This never ships in the app APK. -->
-    <application>
-        <activity
-            android:name="androidx.activity.ComponentActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
+    <!-- Unit tests run on the JVM against the app's merged manifest; the inert
+         ComponentActivity host is declared in the main manifest. Nothing to add here. -->
+    <application />
 </manifest>
