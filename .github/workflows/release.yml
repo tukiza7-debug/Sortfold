@@ -49,11 +49,18 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: >
-          ./gradlew assembleRelease bundleRelease --stacktrace
-          -PversionName=${{ steps.ver.outputs.version }}
-          -PversionCode=${{ steps.ver.outputs.code }}
-          -PgithubRepo=${{ github.repository }}
+        # AGP 8.13+ cannot build an AAB and split APKs in one invocation
+        # (resource shrinking + ABI splits); the bundle gets its own pass with
+        # -PbundleOnly which disables splits — the AAB handles ABIs natively.
+        run: |
+          ./gradlew bundleRelease -PbundleOnly --stacktrace \
+            -PversionName=${{ steps.ver.outputs.version }} \
+            -PversionCode=${{ steps.ver.outputs.code }} \
+            -PgithubRepo=${{ github.repository }}
+          ./gradlew assembleRelease --stacktrace \
+            -PversionName=${{ steps.ver.outputs.version }} \
+            -PversionCode=${{ steps.ver.outputs.code }} \
+            -PgithubRepo=${{ github.repository }}
 
       - name: Rename artifacts
         run: |

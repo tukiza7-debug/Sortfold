@@ -86,9 +86,12 @@ android {
     }
 
     // Universal APK plus per-ABI APKs for the release channel.
+    // AGP 8.13+ forbids resource shrinking for an AAB while ABI splits are on
+    // (issuetracker 402800800), so the bundle invocation passes -PbundleOnly
+    // to disable splits; the AAB handles ABIs natively.
     splits {
         abi {
-            isEnable = true
+            isEnable = !project.hasProperty("bundleOnly")
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
             isUniversalApk = true
