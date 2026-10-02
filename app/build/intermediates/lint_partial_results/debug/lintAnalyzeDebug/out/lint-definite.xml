@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.7.3" type="incidents">
+
+    <incident
+        id="LintWarning"
+        severity="warning"
+        message="Unexpected attribute `path`, expected `id`, `in` or `severity`">
+        <location
+            file="lint.xml"
+            line="7"
+            startOffset="351"
+            endLine="7"
+            endColumn="0"
+            endOffset="351"/>
+    </incident>
+
+    <incident
+        id="AndroidGradlePluginVersion"
+        severity="warning"
+        message="A newer version of com.android.application than 8.7.3 is available: 9.4.1">
+        <fix-replace
+            description="Change to 9.4.1"
+            family="Update versions"
+            oldString="8.7.3"
+            replacement="9.4.1"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="2"
+            column="7"
+            startOffset="17"
+            endLine="2"
+            endColumn="14"
+            endOffset="24"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-ktx than 1.15.0 is available: 1.19.1">
+        <fix-replace
+            description="Change to 1.19.1"
+            family="Update versions"
+            oldString="1.15.0"
+            replacement="1.19.1"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="5"
+            column="11"
+            startOffset="75"
+            endLine="5"
+            endColumn="19"
+            endOffset="83"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.appcompat:appcompat than 1.7.0 is available: 1.8.0">
+        <fix-replace
+            description="Change to 1.8.0"
+            family="Update versions"
+            oldString="1.7.0"
+            replacement="1.8.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="6"
+            column="13"
+            startOffset="96"
+            endLine="6"
+            endColumn="20"
+            endOffset="103"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.activity:activity-compose than 1.9.3 is available: 1.13.0">
+        <fix-replace
+            description="Change to 1.13.0"
+            family="Update versions"
+            oldString="1.9.3"
+            replacement="1.13.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="7"
+            column="19"
+            startOffset="122"
+            endLine="7"
+            endColumn="26"
+            endOffset="129"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.8.7 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="8"
+            column="13"
+            startOffset="142"
+            endLine="8"
+            endColumn="20"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.7 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="8"
+            column="13"
+            startOffset="142"
+            endLine="8"
+            endColumn="20"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.8.7 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="8"
+            column="13"
+            startOffset="142"
+            endLine="8"
+            endColumn="20"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-ktx than 2.8.7 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="8"
+            column="13"
+            startOffset="142"
+            endLine="8"
+            endColumn="20"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.compose:compose-bom than 2024.12.01 is available: 2026.09.00">
+        <fix-replace
+            description="Change to 2026.09.00"
+            family="Update versions"
+            oldString="2024.12.01"
+            replacement="2026.09.00"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="9"
+            column="14"
+            startOffset="163"
+            endLine="9"
+            endColumn="26"
+            endOffset="175"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.navigation:navigation-compose than 2.8.5 is available: 2.10.2">
+        <fix-replace
+            description="Change to 2.10.2"
+            family="Update versions"
+            oldString="2.8.5"
+            replacement="2.10.2"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="10"
+            column="21"
+            startOffset="196"
+            endLine="10"
+            endColumn="28"
+            endOffset="203"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-compiler than 2.6.1 is available: 2.8.5">
+        <fix-replace
+            description="Change to 2.8.5"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.5"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="11"
+            column="8"
+            startOffset="211"
+            endLine="11"
+            endColumn="15"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-ktx than 2.6.1 is available: 2.8.5">
+        <fix-replace
+            description="Change to 2.8.5"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.5"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="11"
+            column="8"
+            startOffset="211"
+            endLine="11"
+            endColumn="15"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-runtime than 2.6.1 is available: 2.8.5">
+        <fix-replace
+            description="Change to 2.8.5"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.5"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="11"
+            column="8"
+            startOffset="211"
+            endLine="11"
+            endColumn="15"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.work:work-runtime-ktx than 2.10.0 is available: 2.12.0">
+        <fix-replace
+            description="Change to 2.12.0"
+            family="Update versions"
+            oldString="2.10.0"
+            replacement="2.12.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="12"
+            column="8"
+            startOffset="226"
+            endLine="12"
+            endColumn="16"
+            endOffset="234"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.datastore:datastore-preferences than 1.1.1 is available: 1.2.1">
+        <fix-replace
+            description="Change to 1.2.1"
+            family="Update versions"
+            oldString="1.1.1"
+            replacement="1.2.1"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="13"
+            column="13"
+            startOffset="247"
+            endLine="13"
+            endColumn="20"
+            endOffset="254"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.documentfile:documentfile than 1.0.1 is available: 1.1.0">
+        <fix-replace
+            description="Change to 1.1.0"
+            family="Update versions"
+            oldString="1.0.1"
+            replacement="1.1.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="14"
+            column="16"
+            startOffset="270"
+            endLine="14"
+            endColumn="23"
+            endOffset="277"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.exifinterface:exifinterface than 1.3.7 is available: 1.4.2">
+        <fix-replace
+            description="Change to 1.4.2"
+            family="Update versions"
+            oldString="1.3.7"
+            replacement="1.4.2"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="15"
+            column="17"
+            startOffset="294"
+            endLine="15"
+            endColumn="24"
+            endOffset="301"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-splashscreen than 1.0.1 is available: 1.2.0">
+        <fix-replace
+            description="Change to 1.2.0"
+            family="Update versions"
+            oldString="1.0.1"
+            replacement="1.2.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="16"
+            column="16"
+            startOffset="317"
+            endLine="16"
+            endColumn="23"
+            endOffset="324"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;files&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="41"
+            column="5"
+            startOffset="1756"
+            endLine="41"
+            endColumn="97"
+            endOffset="1848"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;files&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="48"
+            column="5"
+            startOffset="2226"
+            endLine="48"
+            endColumn="88"
+            endOffset="2309"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;images&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="86"
+            column="5"
+            startOffset="4681"
+            endLine="86"
+            endColumn="87"
+            endOffset="4763"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;more&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="151"
+            column="5"
+            startOffset="9177"
+            endLine="151"
+            endColumn="58"
+            endOffset="9230"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;files&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="156"
+            column="5"
+            startOffset="9450"
+            endLine="156"
+            endColumn="121"
+            endOffset="9566"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;files&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="179"
+            column="5"
+            startOffset="11245"
+            endLine="179"
+            endColumn="82"
+            endOffset="11322"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;days&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="218"
+            column="5"
+            startOffset="13457"
+            endLine="218"
+            endColumn="67"
+            endOffset="13519"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;files&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="260"
+            column="5"
+            startOffset="16146"
+            endLine="260"
+            endColumn="70"
+            endOffset="16211"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-replace
+            description="Replace with mutableIntStateOf"
+            replacement="androidx.compose.runtime.mutableIntStateOf"
+            shortenNames="true"
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/settings/AutoRulesScreen.kt"
+                startOffset="3267"
+                endOffset="3281"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/settings/AutoRulesScreen.kt"
+            line="71"
+            column="44"
+            startOffset="3267"
+            endLine="71"
+            endColumn="58"
+            endOffset="3281"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-replace
+            description="Replace with mutableIntStateOf"
+            replacement="androidx.compose.runtime.mutableIntStateOf"
+            shortenNames="true"
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/settings/AutoRulesScreen.kt"
+                startOffset="3337"
+                endOffset="3351"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/settings/AutoRulesScreen.kt"
+            line="72"
+            column="51"
+            startOffset="3337"
+            endLine="72"
+            endColumn="65"
+            endOffset="3351"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-replace
+            description="Replace with mutableIntStateOf"
+            replacement="androidx.compose.runtime.mutableIntStateOf"
+            shortenNames="true"
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/settings/AutoRulesScreen.kt"
+                startOffset="3402"
+                endOffset="3416"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/settings/AutoRulesScreen.kt"
+            line="73"
+            column="46"
+            startOffset="3402"
+            endLine="73"
+            endColumn="60"
+            endOffset="3416"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-replace
+            description="Replace with mutableIntStateOf"
+            replacement="androidx.compose.runtime.mutableIntStateOf"
+            shortenNames="true"
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/wizard/WizardScreen.kt"
+                startOffset="22173"
+                endOffset="22187"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/wizard/WizardScreen.kt"
+            line="529"
+            column="41"
+            startOffset="22173"
+            endLine="529"
+            endColumn="55"
+            endOffset="22187"/>
+    </incident>
+
+</incidents>

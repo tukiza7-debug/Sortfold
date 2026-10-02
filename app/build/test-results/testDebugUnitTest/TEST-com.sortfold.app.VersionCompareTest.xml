@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.sortfold.app.VersionCompareTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:27:47" hostname="c-6abf6a90-14810412-840fa9da916c" time="0.005">
+  <properties/>
+  <testcase name="compares numerically not lexicographically" classname="com.sortfold.app.VersionCompareTest" time="0.004"/>
+  <testcase name="handles v prefix and short versions" classname="com.sortfold.app.VersionCompareTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

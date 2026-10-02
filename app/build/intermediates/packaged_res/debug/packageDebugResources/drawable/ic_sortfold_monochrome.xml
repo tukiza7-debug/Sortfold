@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same mark as the foreground, single path, for themed (monochrome) icons. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M31,45 a4,4 0 0 1 4,-4 h11.5 l5,5 h21.5 a4,4 0 0 1 4,4 v24 a4,4 0 0 1 -4,4 H35 a4,4 0 0 1 -4,-4 Z M35,50 h38 v24 h-38 Z M39,54 h22 v3.5 h-22 Z M39,60 h14 v3.5 h-14 Z M39,66 h18 v3.5 h-18 Z" />
+</vector>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.sortfold.app.DuplicatePolicyTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:27:46" hostname="c-6abf6a90-14810412-840fa9da916c" time="0.13">
+  <properties/>
+  <testcase name="rename candidate finds first free slot" classname="com.sortfold.app.DuplicatePolicyTest" time="0.13"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

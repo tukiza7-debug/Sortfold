@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.7.3" type="incidents">
+
+    <incident
+        id="LintWarning"
+        severity="warning"
+        message="Unexpected attribute `path`, expected `id`, `in` or `severity`">
+        <location
+            file="lint.xml"
+            line="7"
+            startOffset="351"
+            endLine="7"
+            endColumn="0"
+            endOffset="351"/>
+    </incident>
+
+    <incident
+        id="AndroidGradlePluginVersion"
+        severity="warning"
+        message="A newer version of com.android.application than 8.7.3 is available: 9.4.1">
+        <fix-replace
+            description="Change to 9.4.1"
+            family="Update versions"
+            oldString="8.7.3"
+            replacement="9.4.1"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="2"
+            column="7"
+            startOffset="17"
+            endLine="2"
+            endColumn="14"
+            endOffset="24"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-ktx than 1.15.0 is available: 1.19.1">
+        <fix-replace
+            description="Change to 1.19.1"
+            family="Update versions"
+            oldString="1.15.0"
+            replacement="1.19.1"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="5"
+            column="11"
+            startOffset="75"
+            endLine="5"
+            endColumn="19"
+            endOffset="83"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.appcompat:appcompat than 1.7.0 is available: 1.8.0">
+        <fix-replace
+            description="Change to 1.8.0"
+            family="Update versions"
+            oldString="1.7.0"
+            replacement="1.8.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="6"
+            column="13"
+            startOffset="96"
+            endLine="6"
+            endColumn="20"
+            endOffset="103"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.activity:activity-compose than 1.9.3 is available: 1.13.0">
+        <fix-replace
+            description="Change to 1.13.0"
+            family="Update versions"
+            oldString="1.9.3"
+            replacement="1.13.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="7"
+            column="19"
+            startOffset="122"
+            endLine="7"
+            endColumn="26"
+            endOffset="129"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.8.7 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="8"
+            column="13"
+            startOffset="142"
+            endLine="8"
+            endColumn="20"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.7 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="8"
+            column="13"
+            startOffset="142"
+            endLine="8"
+            endColumn="20"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.8.7 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="8"
+            column="13"
+            startOffset="142"
+            endLine="8"
+            endColumn="20"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-ktx than 2.8.7 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="8"
+            column="13"
+            startOffset="142"
+            endLine="8"
+            endColumn="20"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.compose:compose-bom than 2024.12.01 is available: 2026.09.00">
+        <fix-replace
+            description="Change to 2026.09.00"
+            family="Update versions"
+            oldString="2024.12.01"
+            replacement="2026.09.00"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="9"
+            column="14"
+            startOffset="163"
+            endLine="9"
+            endColumn="26"
+            endOffset="175"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.navigation:navigation-compose than 2.8.5 is available: 2.10.2">
+        <fix-replace
+            description="Change to 2.10.2"
+            family="Update versions"
+            oldString="2.8.5"
+            replacement="2.10.2"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="10"
+            column="21"
+            startOffset="196"
+            endLine="10"
+            endColumn="28"
+            endOffset="203"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-compiler than 2.6.1 is available: 2.8.5">
+        <fix-replace
+            description="Change to 2.8.5"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.5"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="11"
+            column="8"
+            startOffset="211"
+            endLine="11"
+            endColumn="15"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-ktx than 2.6.1 is available: 2.8.5">
+        <fix-replace
+            description="Change to 2.8.5"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.5"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="11"
+            column="8"
+            startOffset="211"
+            endLine="11"
+            endColumn="15"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-runtime than 2.6.1 is available: 2.8.5">
+        <fix-replace
+            description="Change to 2.8.5"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.5"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="11"
+            column="8"
+            startOffset="211"
+            endLine="11"
+            endColumn="15"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.work:work-runtime-ktx than 2.10.0 is available: 2.12.0">
+        <fix-replace
+            description="Change to 2.12.0"
+            family="Update versions"
+            oldString="2.10.0"
+            replacement="2.12.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="12"
+            column="8"
+            startOffset="226"
+            endLine="12"
+            endColumn="16"
+            endOffset="234"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.datastore:datastore-preferences than 1.1.1 is available: 1.2.1">
+        <fix-replace
+            description="Change to 1.2.1"
+            family="Update versions"
+            oldString="1.1.1"
+            replacement="1.2.1"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="13"
+            column="13"
+            startOffset="247"
+            endLine="13"
+            endColumn="20"
+            endOffset="254"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.documentfile:documentfile than 1.0.1 is available: 1.1.0">
+        <fix-replace
+            description="Change to 1.1.0"
+            family="Update versions"
+            oldString="1.0.1"
+            replacement="1.1.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="14"
+            column="16"
+            startOffset="270"
+            endLine="14"
+            endColumn="23"
+            endOffset="277"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.exifinterface:exifinterface than 1.3.7 is available: 1.4.2">
+        <fix-replace
+            description="Change to 1.4.2"
+            family="Update versions"
+            oldString="1.3.7"
+            replacement="1.4.2"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="15"
+            column="17"
+            startOffset="294"
+            endLine="15"
+            endColumn="24"
+            endOffset="301"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-splashscreen than 1.0.1 is available: 1.2.0">
+        <fix-replace
+            description="Change to 1.2.0"
+            family="Update versions"
+            oldString="1.0.1"
+            replacement="1.2.0"
+            priority="0"/>
+        <location
+            file="$HOME/my-project/Sortfold/gradle/libs.versions.toml"
+            line="16"
+            column="16"
+            startOffset="317"
+            endLine="16"
+            endColumn="23"
+            endOffset="324"/>
+    </incident>
+
+</incidents>

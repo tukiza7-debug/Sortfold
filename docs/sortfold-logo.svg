@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="216" height="216">
+  <!-- Sortfold mark: folder + three left-aligned bars of different lengths.
+       Two colours only: teal background, white mark. Same geometry as
+       app/src/main/res/drawable/ic_sortfold_foreground.xml -->
+  <rect width="108" height="108" rx="22" fill="#0F6B5F"/>
+  <path fill="#FFFFFF" fill-rule="evenodd" d="
+    M31,45 a4,4 0 0 1 4,-4 h11.5 l5,5 h21.5 a4,4 0 0 1 4,4 v24 a4,4 0 0 1 -4,4 H35 a4,4 0 0 1 -4,-4 Z
+    M35,50 h38 v24 h-38 Z
+    M39,54 h22 v3.5 h-22 Z
+    M39,60 h14 v3.5 h-14 Z
+    M39,66 h18 v3.5 h-18 Z"/>
+</svg>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.7.3" type="conditional_incidents">
+
+    <incident
+        id="ScopedStorage"
+        severity="warning"
+        message="">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*manifest*0}"
+            line="10"
+            column="23"
+            startOffset="521"
+            endLine="10"
+            endColumn="63"
+            endOffset="561"/>
+        <map>
+            <entry
+                name="maxSdkVersion"
+                int="32"/>
+            <entry
+                name="read"
+                boolean="true"/>
+        </map>
+    </incident>
+
+    <incident
+        id="NotificationPermission"
+        severity="error"
+        message="When targeting Android 13 or higher, posting a permission requires holding the `POST_NOTIFICATIONS` permission">
+        <fix-data missing="android.permission.POST_NOTIFICATIONS"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/work/SortWorker.kt"
+            line="163"
+            column="13"
+            startOffset="7093"
+            endLine="163"
+            endColumn="110"
+            endOffset="7190"/>
+    </incident>
+
+    <incident
+        id="NotificationPermission"
+        severity="error"
+        message="When targeting Android 13 or higher, posting a permission requires holding the `POST_NOTIFICATIONS` permission">
+        <fix-data missing="android.permission.POST_NOTIFICATIONS"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/work/SortWorker.kt"
+            line="178"
+            column="9"
+            startOffset="7754"
+            endLine="178"
+            endColumn="130"
+            endOffset="7875"/>
+    </incident>
+
+    <incident
+        id="NotificationPermission"
+        severity="error"
+        message="When targeting Android 13 or higher, posting a permission requires holding the `POST_NOTIFICATIONS` permission">
+        <fix-data missing="android.permission.POST_NOTIFICATIONS"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/work/SortWorker.kt"
+            line="184"
+            column="13"
+            startOffset="8010"
+            endLine="184"
+            endColumn="109"
+            endOffset="8106"/>
+    </incident>
+
+    <incident
+        id="NotificationPermission"
+        severity="error"
+        message="When targeting Android 13 or higher, posting a permission requires holding the `POST_NOTIFICATIONS` permission">
+        <fix-data missing="android.permission.POST_NOTIFICATIONS"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/work/WorkScheduler.kt"
+            line="37"
+            column="13"
+            startOffset="1846"
+            endLine="43"
+            endColumn="14"
+            endOffset="2135"/>
+    </incident>
+
+</incidents>

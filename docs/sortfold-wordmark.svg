@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" width="320" height="64">
+  <!-- Sortfold wordmark: mark + name, for README and splash contexts.
+       Text uses a generic sans stack; geometry matches the app icon. -->
+  <g transform="translate(4,8)">
+    <path fill="#0F6B5F" fill-rule="evenodd" d="
+      M2,10 a3,3 0 0 1 3,-3 h8.5 l3.5,3.5 h16 a3,3 0 0 1 3,3 v17 a3,3 0 0 1 -3,3 H5 a3,3 0 0 1 -3,-3 Z
+      M5,15.5 h28 v17.5 H5 Z
+      M8,18.5 h16 v2.6 h-16 Z
+      M8,23.5 h10 v2.6 h-10 Z
+      M8,28.5 h13 v2.6 h-13 Z"/>
+  </g>
+  <text x="56" y="44" font-family="-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+        font-size="34" font-weight="600" fill="#0F6B5F">Sortfold</text>
+</svg>

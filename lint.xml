@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The adaptive launcher icons must stay in mipmap-anydpi-v26: AGP's resource
+     merger drops mipmap-anydpi (unversioned) adaptive-icon XML from the merge.
+     With minSdk 29 the v26 qualifier always matches at runtime, so this is
+     purely a build-tooling constraint, not a compatibility one. -->
+<lint>
+    <issue id="ObsoleteSdkInt" severity="ignore" path="res/mipmap-anydpi-v26" />
+</lint>

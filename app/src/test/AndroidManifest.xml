@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Unit tests run on the JVM; Android framework classes used by pure-logic
+         tests (Uri parsing) are stubbed via testOptions.returnDefaultValues. -->
+    <application />
+</manifest>

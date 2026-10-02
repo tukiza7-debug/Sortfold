@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.sortfold.app.ModeSuggesterTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:27:46" hostname="c-6abf6a90-14810412-840fa9da916c" time="0.066">
+  <properties/>
+  <testcase name="mixed media types suggest file type mode" classname="com.sortfold.app.ModeSuggesterTest" time="0.048"/>
+  <testcase name="wide date span suggests date mode" classname="com.sortfold.app.ModeSuggesterTest" time="0.003"/>
+  <testcase name="known source folder suggests source app mode" classname="com.sortfold.app.ModeSuggesterTest" time="0.001"/>
+  <testcase name="mixed sizes suggest size mode" classname="com.sortfold.app.ModeSuggesterTest" time="0.004"/>
+  <testcase name="empty folder suggests file type with empty reason" classname="com.sortfold.app.ModeSuggesterTest" time="0.001"/>
+  <testcase name="many extensions suggest extension mode" classname="com.sortfold.app.ModeSuggesterTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,42 @@
+[
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/drawable_ic_sortfold_monochrome.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/drawable/ic_sortfold_monochrome.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/drawable_ic_stat_sortfold.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/drawable/ic_stat_sortfold.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/drawable_ic_sortfold_foreground.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/drawable/ic_sortfold_foreground.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/drawable_ic_sortfold_splash.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/drawable/ic_sortfold_splash.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/xml_backup_rules.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/xml_file_paths.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/xml/file_paths.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/xml_data_extraction_rules.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-debug-4:/xml_locales_config.xml.flat",
+        "source": "/home/z/my-project/tools/gradle-home/daemon/8.9/com.sortfold.app-main-6:/xml/locales_config.xml"
+    }
+]
