@@ -32,9 +32,6 @@ interface SortJobDao {
 
     @Query("DELETE FROM sort_jobs WHERE createdAt < :cutoff")
     suspend fun deleteOlderThan(cutoff: Long): Int
-
-    @Query("SELECT * FROM sort_jobs ORDER BY createdAt DESC LIMIT 1")
-    suspend fun lastJob(): SortJobEntity?
 }
 
 @Dao
@@ -92,9 +89,6 @@ interface ErrorDao {
 
     @Query("DELETE FROM error_reports")
     suspend fun clearAll(): Int
-
-    @Query("SELECT COUNT(*) FROM error_reports")
-    suspend fun count(): Int
 }
 
 @Dao
@@ -116,7 +110,4 @@ interface AutoRuleDao {
 
     @Query("UPDATE auto_rules SET lastRunAt = :runAt WHERE id = :id")
     suspend fun setLastRun(id: Long, runAt: Long)
-
-    @Query("SELECT * FROM auto_rules WHERE id = :id")
-    suspend fun byId(id: Long): AutoRuleEntity?
 }

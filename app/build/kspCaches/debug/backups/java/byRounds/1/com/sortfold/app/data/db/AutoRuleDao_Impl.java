@@ -3,7 +3,6 @@ package com.sortfold.app.data.db;
 import android.database.Cursor;
 import android.os.CancellationSignal;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.room.CoroutinesRoom;
 import androidx.room.EntityDeletionOrUpdateAdapter;
 import androidx.room.EntityInsertionAdapter;
@@ -307,64 +306,6 @@ public final class AutoRuleDao_Impl implements AutoRuleDao {
             }
             _item = new AutoRuleEntity(_tmpId,_tmpName,_tmpTreeUri,_tmpModesCsv,_tmpDateGranularity,_tmpDuplicatePolicy,_tmpEnabled,_tmpLastRunAt);
             _result.add(_item);
-          }
-          return _result;
-        } finally {
-          _cursor.close();
-          _statement.release();
-        }
-      }
-    }, $completion);
-  }
-
-  @Override
-  public Object byId(final long id, final Continuation<? super AutoRuleEntity> $completion) {
-    final String _sql = "SELECT * FROM auto_rules WHERE id = ?";
-    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
-    int _argIndex = 1;
-    _statement.bindLong(_argIndex, id);
-    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
-    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<AutoRuleEntity>() {
-      @Override
-      @Nullable
-      public AutoRuleEntity call() throws Exception {
-        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
-        try {
-          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
-          final int _cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(_cursor, "name");
-          final int _cursorIndexOfTreeUri = CursorUtil.getColumnIndexOrThrow(_cursor, "treeUri");
-          final int _cursorIndexOfModesCsv = CursorUtil.getColumnIndexOrThrow(_cursor, "modesCsv");
-          final int _cursorIndexOfDateGranularity = CursorUtil.getColumnIndexOrThrow(_cursor, "dateGranularity");
-          final int _cursorIndexOfDuplicatePolicy = CursorUtil.getColumnIndexOrThrow(_cursor, "duplicatePolicy");
-          final int _cursorIndexOfEnabled = CursorUtil.getColumnIndexOrThrow(_cursor, "enabled");
-          final int _cursorIndexOfLastRunAt = CursorUtil.getColumnIndexOrThrow(_cursor, "lastRunAt");
-          final AutoRuleEntity _result;
-          if (_cursor.moveToFirst()) {
-            final long _tmpId;
-            _tmpId = _cursor.getLong(_cursorIndexOfId);
-            final String _tmpName;
-            _tmpName = _cursor.getString(_cursorIndexOfName);
-            final String _tmpTreeUri;
-            _tmpTreeUri = _cursor.getString(_cursorIndexOfTreeUri);
-            final String _tmpModesCsv;
-            _tmpModesCsv = _cursor.getString(_cursorIndexOfModesCsv);
-            final String _tmpDateGranularity;
-            _tmpDateGranularity = _cursor.getString(_cursorIndexOfDateGranularity);
-            final String _tmpDuplicatePolicy;
-            _tmpDuplicatePolicy = _cursor.getString(_cursorIndexOfDuplicatePolicy);
-            final boolean _tmpEnabled;
-            final int _tmp;
-            _tmp = _cursor.getInt(_cursorIndexOfEnabled);
-            _tmpEnabled = _tmp != 0;
-            final Long _tmpLastRunAt;
-            if (_cursor.isNull(_cursorIndexOfLastRunAt)) {
-              _tmpLastRunAt = null;
-            } else {
-              _tmpLastRunAt = _cursor.getLong(_cursorIndexOfLastRunAt);
-            }
-            _result = new AutoRuleEntity(_tmpId,_tmpName,_tmpTreeUri,_tmpModesCsv,_tmpDateGranularity,_tmpDuplicatePolicy,_tmpEnabled,_tmpLastRunAt);
-          } else {
-            _result = null;
           }
           return _result;
         } finally {

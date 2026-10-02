@@ -1,12 +1,14 @@
 package com.sortfold.app.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -23,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -72,101 +75,117 @@ fun HomeScreen(
     val vm: HomeViewModel = viewModel(factory = simpleFactory { HomeViewModel(container) })
     val settings by vm.settings.collectAsStateWithLifecycle()
     val jobs by vm.recentJobs.collectAsStateWithLifecycle()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
-    LazyColumn(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    // Expanded layouts get a readable max content width, centered.
+    Box(
+        Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
-                Text(
-                    stringResource(R.string.home_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-
-        // Crash banner: "the app closed unexpectedly" from the last launch.
-        if (settings?.crashedLastRun == true) {
+        LazyColumn(
+            modifier = Modifier
+                .padding(16.dp)
+                .then(if (expanded) Modifier.widthIn(max = 720.dp) else Modifier.fillMaxSize()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
             item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Filled.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        stringResource(R.string.home_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            // Crash banner: "the app closed unexpectedly" from the last launch.
+            if (settings?.crashedLastRun == true) {
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    ) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Icon(
+                                    Icons.Filled.BugReport,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                )
+                                Text(
+                                    stringResource(R.string.home_crash_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                )
+                            }
                             Text(
-                                stringResource(R.string.home_crash_title),
-                                style = MaterialTheme.typography.titleMedium,
+                                stringResource(R.string.home_crash_body),
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                             )
-                        }
-                        Text(
-                            stringResource(R.string.home_crash_body),
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(onClick = onOpenErrors) { Text(stringResource(R.string.home_crash_view)) }
-                            TextButton(onClick = { vm.acknowledgeCrash() }) { Text(stringResource(R.string.action_dismiss)) }
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                TextButton(onClick = onOpenErrors) { Text(stringResource(R.string.home_crash_view)) }
+                                TextButton(onClick = { vm.acknowledgeCrash() }) { Text(stringResource(R.string.action_dismiss)) }
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Battery exemption is ONLY offered after the system killed a long job.
-        if (settings?.jobKilledBySystem == true) {
+            // Battery exemption is ONLY offered after the system killed a long job.
+            if (settings?.jobKilledBySystem == true) {
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                    ) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(stringResource(R.string.battery_title), style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                stringResource(R.string.battery_body),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                TextButton(onClick = {
+                                    val i = android.content.Intent(
+                                        android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                    ).setData(android.net.Uri.parse("package:${context.packageName}"))
+                                    runCatching { context.startActivity(i) }
+                                }) { Text(stringResource(R.string.battery_allow)) }
+                                TextButton(onClick = { vm.dismissBatteryOffer() }) {
+                                    Text(stringResource(R.string.action_dismiss))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                Button(
+                    onClick = onStartSort,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
                 ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.battery_title), style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            stringResource(R.string.battery_body),
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(onClick = {
-                                val i = android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                                    .setData(android.net.Uri.parse("package:${context.packageName}"))
-                                runCatching { context.startActivity(i) }
-                            }) { Text(stringResource(R.string.battery_allow)) }
-                            TextButton(onClick = { vm.dismissBatteryOffer() }) { Text(stringResource(R.string.action_dismiss)) }
-                        }
-                    }
+                    Text(stringResource(R.string.home_start_cta))
                 }
             }
-        }
 
-        item {
-            Button(
-                onClick = onStartSort,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-            ) {
-                Text(stringResource(R.string.home_start_cta))
-            }
-        }
+            item { SectionHeader(stringResource(R.string.home_recent)) }
 
-        item { SectionHeader(stringResource(R.string.home_recent)) }
-
-        if (jobs.isEmpty()) {
-            item {
-                EmptyState(
-                    title = stringResource(R.string.home_empty_title),
-                    description = stringResource(R.string.home_empty_body),
-                )
-            }
-        } else {
-            items(jobs, key = { it.id }) { job ->
-                RecentJobCard(job, onClick = { onOpenJob(job.id) })
+            if (jobs.isEmpty()) {
+                item {
+                    EmptyState(
+                        title = stringResource(R.string.home_empty_title),
+                        description = stringResource(R.string.home_empty_body),
+                    )
+                }
+            } else {
+                items(jobs, key = { it.id }) { job ->
+                    RecentJobCard(job, onClick = { onOpenJob(job.id) })
+                }
             }
         }
     }

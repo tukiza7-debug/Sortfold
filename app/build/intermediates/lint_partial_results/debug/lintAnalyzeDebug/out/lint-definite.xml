@@ -569,17 +569,17 @@
             priority="0">
             <range
                 file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/wizard/WizardScreen.kt"
-                startOffset="22401"
-                endOffset="22415"/>
+                startOffset="22355"
+                endOffset="22369"/>
         </fix-replace>
         <location
             file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/wizard/WizardScreen.kt"
-            line="535"
+            line="534"
             column="41"
-            startOffset="22401"
-            endLine="535"
+            startOffset="22355"
+            endLine="534"
             endColumn="55"
-            endOffset="22415"/>
+            endOffset="22369"/>
     </incident>
 
 </incidents>

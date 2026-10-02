@@ -4,9 +4,9 @@
 /home/z/my-project/Sortfold/lint.xml:7: Warning: Unexpected attribute path, expected id, in or severity [LintWarning]
     <issue id="ObsoleteSdkInt" severity="ignore" path="res/mipmap-anydpi-v26" />
     ^
-/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/home/HomeScreen.kt:136: Warning: Use of REQUEST_IGNORE_BATTERY_OPTIMIZATIONS violates the Play Store Content Policy regarding acceptable use cases, as described in https://developer.android.com/training/monitoring-device-state/doze-standby.html [BatteryLife]
-                                val i = android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/home/HomeScreen.kt:152: Warning: Use of REQUEST_IGNORE_BATTERY_OPTIMIZATIONS violates the Play Store Content Policy regarding acceptable use cases, as described in https://developer.android.com/training/monitoring-device-state/doze-standby.html [BatteryLife]
+                                        android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    Explanation for issues of type "BatteryLife":
    This issue flags code that either
@@ -253,7 +253,7 @@ splashscreen = "1.0.1"
 /home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/settings/AutoRulesScreen.kt:73: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
     var newPolicyIndex by rememberSaveable { mutableStateOf(0) }
                                              ~~~~~~~~~~~~~~
-/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt:535: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+/home/z/my-project/Sortfold/app/src/main/java/com/sortfold/app/ui/wizard/WizardScreen.kt:534: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
     var typeIndex by rememberSaveable { mutableStateOf(0) }
                                         ~~~~~~~~~~~~~~
 

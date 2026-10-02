@@ -20,12 +20,12 @@
                     <map id="android.settings.APPLICATION_DETAILS_SETTINGS (used to start an activity)">
                         <location id="0"
                             file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/wizard/WizardScreen.kt"
-                            line="438"
+                            line="437"
                             column="18"
-                            startOffset="18309"
-                            endLine="438"
+                            startOffset="18263"
+                            endLine="437"
                             endColumn="103"
-                            endOffset="18394"/>
+                            endOffset="18348"/>
                     </map>
                     <map id="android.settings.APP_NOTIFICATION_SETTINGS (used to start an activity)">
                         <location id="0"
@@ -40,12 +40,12 @@
                     <map id="android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS (used to start an activity)">
                         <location id="0"
                             file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/sortfold/app/ui/home/HomeScreen.kt"
-                            line="136"
-                            column="41"
-                            startOffset="6066"
-                            endLine="136"
-                            endColumn="134"
-                            endOffset="6159"/>
+                            line="151"
+                            column="45"
+                            startOffset="6893"
+                            endLine="153"
+                            endColumn="38"
+                            endOffset="7065"/>
                     </map>
             </map>
     </map>

@@ -28,9 +28,6 @@ class MainActivity : AppCompatActivity() {
     /** Set when the app is opened from a completion / update notification. */
     val pendingJobId = MutableStateFlow<Long?>(null)
 
-    var windowSizeClass: WindowSizeClass? = null
-        private set
-
     private var keepSplash = mutableStateOf(true)
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -57,7 +54,6 @@ class MainActivity : AppCompatActivity() {
             val settings by (application as SortfoldApp).container.settingsRepository.settings
                 .collectAsStateWithLifecycle(initialValue = AppSettings())
             val wsc = calculateWindowSizeClass(this)
-            windowSizeClass = wsc
             val reducedMotion = settings.reduceAnimations ||
                 android.provider.Settings.Global.getFloat(
                     contentResolver,
