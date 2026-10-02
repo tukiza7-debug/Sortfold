@@ -590,7 +590,7 @@ private fun NameRulesEditor(vm: WizardViewModel) {
                     selected = typeIndex == i,
                     onClick = { typeIndex = i },
                     shape = SegmentedButtonDefaults.itemShape(i, NamePatternType.entries.size),
-                ) { Text(t.name.lowercase().replaceFirstChar { it.uppercase() }) }
+                ) { Text(patternTypeLabel(t)) }
             }
         }
         OutlinedTextField(
@@ -733,12 +733,13 @@ private fun ApplyStep(vm: WizardViewModel, job: SortJobEntity?) {
         val done = job?.doneFiles ?: 0
         Text(stringResource(R.string.apply_running), style = MaterialTheme.typography.titleMedium)
         if (total > 0) {
+            val progressLabel = stringResource(R.string.a11y_apply_progress, done, total)
             LinearProgressIndicator(
                 progress = { done.toFloat() / total },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
-                    .semantics { contentDescription = "progress $done of $total" },
+                    .semantics { contentDescription = progressLabel },
             )
         } else {
             CircularProgressIndicator(Modifier.size(40.dp))
@@ -870,6 +871,15 @@ private fun modeDescription(mode: SortMode): String = stringResource(
         SortMode.SIZE -> R.string.mode_size_desc
         SortMode.EXTENSION -> R.string.mode_extension_desc
         SortMode.NAME_PATTERN -> R.string.mode_name_pattern_desc
+    },
+)
+
+@Composable
+fun patternTypeLabel(type: NamePatternType): String = stringResource(
+    when (type) {
+        NamePatternType.PREFIX -> R.string.pattern_prefix
+        NamePatternType.SUFFIX -> R.string.pattern_suffix
+        NamePatternType.CONTAINS -> R.string.pattern_contains
     },
 )
 

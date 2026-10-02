@@ -53,10 +53,14 @@ class ErrorExporter(private val context: Context) {
         includeFullPaths: Boolean,
     ): ExportResult = withContext(Dispatchers.IO) {
         val dir = File(context.cacheDir, "exports").apply { mkdirs() }
-        // Millisecond stamp: two exports within the same second used to
-        // overwrite each other's zip.
+        // Millisecond stamp + collision loop: rapid exports used to overwrite
+        // each other's zip when two landed in the same second (BUG-15).
         val stamp = SimpleDateFormat("yyyyMMdd-HHmmss-SSS", Locale.US).format(Date())
-        val zip = File(dir, "sortfold-errors-$stamp.zip")
+        var zip = File(dir, "sortfold-errors-$stamp.zip")
+        var n = 1
+        while (zip.exists()) {
+            zip = File(dir, "sortfold-errors-$stamp-${n++}.zip")
+        }
 
         ZipOutputStream(zip.outputStream().buffered()).use { out ->
             out.putNextEntry(ZipEntry("report.txt"))

@@ -332,4 +332,8 @@
     <string name="update_err_malformed">GitHub menghantar respons yang tidak dapat dibaca aplikasi.</string>
     <string name="update_err_no_apk">Keluaran terkini belum mempunyai fail APK dilampirkan.</string>
     <string name="update_err_unexpected">Something unexpected happened during the check. Details are in the Error Library.</string>
+    <string name="a11y_apply_progress">%1$d daripada %2$d disusun</string>
+    <string name="pattern_prefix">Bermula dengan</string>
+    <string name="pattern_suffix">Berakhir dengan</string>
+    <string name="pattern_contains">Mengandungi</string>
 </resources>

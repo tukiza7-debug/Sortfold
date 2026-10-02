@@ -182,7 +182,7 @@ fun SettingsScreen(
     var dataRefresh by remember { mutableStateOf(0) }
     var dataBytes by remember { mutableStateOf(0L) }
     LaunchedEffect(dataRefresh) {
-        dataBytes = computeAppDataSize(context)
+        dataBytes = AppDataSize.compute(context) // off the main thread (BUG-24)
     }
     val folderPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
@@ -803,13 +803,6 @@ private fun openSystemNotificationSettings(context: Context) {
     val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
     intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
     context.startActivity(intent)
-}
-
-private fun computeAppDataSize(context: Context): Long {
-    var total = 0L
-    context.cacheDir.walkTopDown().forEach { if (it.isFile) total += it.length() }
-    context.filesDir.walkTopDown().forEach { if (it.isFile) total += it.length() }
-    return total
 }
 
 @Composable

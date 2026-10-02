@@ -333,4 +333,8 @@
     <string name="update_err_malformed">GitHub mengirim jawaban yang tidak bisa dibaca aplikasi.</string>
     <string name="update_err_no_apk">Rilis terbaru belum memiliki file APK terlampir.</string>
     <string name="update_err_unexpected">Terjadi sesuatu yang tidak terduga saat memeriksa. Detailnya ada di Pustaka Galat.</string>
+    <string name="a11y_apply_progress">%1$d dari %2$d tersortir</string>
+    <string name="pattern_prefix">Diawali dengan</string>
+    <string name="pattern_suffix">Diakhiri dengan</string>
+    <string name="pattern_contains">Berisi</string>
 </resources>

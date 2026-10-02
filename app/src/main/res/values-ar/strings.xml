@@ -342,4 +342,8 @@
     <string name="update_err_malformed">أرسل GitHub استجابة لم يتمكن التطبيق من قراءتها.</string>
     <string name="update_err_no_apk">الإصدار الأخير لا يحتوي على ملف APK مرفق بعد.</string>
     <string name="update_err_unexpected">حدث شيء غير متوقع أثناء التحقق. التفاصيل في مكتبة الأخطاء.</string>
+    <string name="a11y_apply_progress">تم فرز %1$d من %2$d</string>
+    <string name="pattern_prefix">يبدأ بـ</string>
+    <string name="pattern_suffix">ينتهي بـ</string>
+    <string name="pattern_contains">يحتوي على</string>
 </resources>
