@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Unit tests run on the JVM; Android framework classes used by pure-logic
-         tests (Uri parsing) are stubbed via testOptions.returnDefaultValues. -->
-    <application />
+    <!-- Unit tests run on the JVM; Robolectric needs a launchable ComponentActivity
+         for the Compose test rule. This never ships in the app APK. -->
+    <application>
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
 </manifest>

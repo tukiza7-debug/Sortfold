@@ -31,16 +31,31 @@ class UpdateCheckWorker(appContext: Context, params: WorkerParameters) : Corouti
         val container = (applicationContext as SortfoldApp).container
         val settings = container.settingsRepository.snapshot()
         val result = container.updateRepository.check(force = false, lastCheckAt = settings.lastUpdateCheckAt)
-        container.settingsRepository.setLastUpdateCheckAt(System.currentTimeMillis())
-        if (result.updateAvailable && result.latest != null && settings.notificationsEnabled) {
-            val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-            nm.notify(
-                4242,
-                ProgressNotifications.completed(
-                    applicationContext, -1L, R.string.notif_update_title,
-                    applicationContext.getString(R.string.notif_update_text, result.latest.version),
-                ),
-            )
+        when (result) {
+            is UpdateRepository.CheckResult.UpdateAvailable -> {
+                container.settingsRepository.setLastUpdateCheckAt(System.currentTimeMillis())
+                if (settings.notificationsEnabled) {
+                    val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+                    nm.notify(
+                        4242,
+                        ProgressNotifications.completed(
+                            applicationContext, -1L, R.string.notif_update_title,
+                            applicationContext.getString(R.string.notif_update_text, result.release.version),
+                        ),
+                    )
+                }
+            }
+            is UpdateRepository.CheckResult.Failure -> {
+                container.errorRepository.log(
+                    module = "updater",
+                    severity = ErrorRepository.Severity.INFO,
+                    type = result.error.javaClass.simpleName,
+                    message = "Background update check failed: ${result.error.message}",
+                )
+            }
+            else -> {
+                container.settingsRepository.setLastUpdateCheckAt(System.currentTimeMillis())
+            }
         }
         return Result.success()
     }

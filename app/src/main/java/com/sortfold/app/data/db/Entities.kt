@@ -53,6 +53,8 @@ data class ErrorEntity(
     val appVersion: String,
     val androidVersion: String,
     val deviceModel: String,
+    val versionCode: Long = 0,
+    val buildId: String = "",
 )
 
 /** A user-configured auto-sort rule. */

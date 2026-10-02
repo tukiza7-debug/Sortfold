@@ -4,7 +4,6 @@
 
     <string name="nav_home">Utama</string>
     <string name="nav_history">Sejarah</string>
-    <string name="nav_errors">Ralat</string>
     <string name="nav_settings">Tetapan</string>
 
     <string name="action_back">Kembali</string>
@@ -269,8 +268,7 @@
     <string name="settings_auto_update">Semak kemas kini secara automatik</string>
     <string name="settings_current_version">Versi semasa: %1$s</string>
     <string name="settings_check_now">Semak sekarang</string>
-    <string name="update_check_failed">Tidak dapat menghubungi GitHub. Semak sambungan anda.</string>
-    <string name="update_up_to_date">Anda menggunakan versi terkini.</string>
+    <string name="update_up_to_date">Anda menggunakan versi terkini. Disemak %1$s.</string>
     <string name="update_available_short">Versi %1$s tersedia di GitHub Releases.</string>
 
     <string name="settings_storage">Storan</string>
@@ -296,4 +294,41 @@
     <string name="battery_title">Kerja latar belakang dihentikan</string>
     <string name="battery_body">Sistem mengganggu kerja susun yang panjang. Anda boleh pengecualikan Sortfold daripada pengoptimuman bateri supaya dapat selesai. Ini pilihan dan hanya ditawarkan selepas gangguan sedemikian.</string>
     <string name="battery_allow">Benarkan</string>
+    <!-- Error Library filters -->
+    <string name="filter_severity">Keterparahan</string>
+    <string name="filter_module">Modul</string>
+    <string name="chip_all">Semua</string>
+    <string name="module_updater">Kemas kini</string>
+    <string name="module_settings">Tetapan</string>
+    <string name="errors_group_count">×%1$d</string>
+    <string name="errors_occurrences">Berlaku %1$d kali</string>
+
+    <!-- Scan failure (inline, never silent) -->
+    <string name="scan_error_permission">Akses ke “%1$s” telah ditarik balik. Berikan kebenaran semula atau pilih folder lain.</string>
+    <string name="scan_error_generic">Tidak dapat membaca “%1$s”. %2$s</string>
+    <string name="wizard_choose_another">Pilih folder lain</string>
+
+    <!-- Settings groups -->
+    <string name="settings_theme">Tema</string>
+    <string name="settings_destination">Folder destinasi</string>
+    <string name="settings_destination_none">Belum ditetapkan (mengisih dalam folder sumber)</string>
+    <string name="settings_auto_rules_desc">Cipta dan sunting peraturan yang berjalan setiap hari.</string>
+    <string name="settings_diagnostics">Diagnostik</string>
+    <string name="settings_error_library_support">%1$d entri · disimpan 30 hari</string>
+    <string name="settings_include_full_paths">Sertakan laluan penuh</string>
+    <string name="settings_include_full_paths_desc">Tunjukkan laluan folder lengkap dalam Pustaka Ralat dan eksport, bukannya yang disamarkan.</string>
+
+    <!-- Update check states -->
+    <string name="update_checking">Menyemak GitHub…</string>
+    <string name="settings_last_checked">Disemak terakhir: %1$s</string>
+    <string name="settings_last_checked_never">Belum pernah disemak</string>
+    <string name="update_download">Muat turun APK</string>
+    <string name="update_err_offline">Anda sedang luar talian. Semak sambungan internet anda.</string>
+    <string name="update_err_timeout">Sambungan ke GitHub tamat masa. Cuba lagi.</string>
+    <string name="update_err_no_release">Tiada keluaran yang diterbitkan lagi.</string>
+    <string name="update_err_rate_limit">Had kadar GitHub dicapai. Cuba lagi kemudian.</string>
+    <string name="update_err_rate_limit_until">Had kadar GitHub dicapai. Cuba lagi selepas %1$s.</string>
+    <string name="update_err_http">GitHub membalas dengan ralat tidak dijangka. Butiran ada dalam Pustaka Ralat.</string>
+    <string name="update_err_malformed">GitHub menghantar respons yang tidak dapat dibaca aplikasi.</string>
+    <string name="update_err_no_apk">Keluaran terkini belum mempunyai fail APK dilampirkan.</string>
 </resources>

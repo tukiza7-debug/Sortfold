@@ -42,11 +42,18 @@ class HistoryViewModel(container: AppContainer) : ViewModel() {
 /** Full operation history; every job can be opened, resumed or undone. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(container: AppContainer, onOpenJob: (Long) -> Unit) {
+fun HistoryScreen(
+    container: AppContainer,
+    onOpenJob: (Long) -> Unit,
+    bottomBar: @Composable () -> Unit = {},
+) {
     val vm: HistoryViewModel = viewModel(factory = simpleFactory { HistoryViewModel(container) })
     val jobs by vm.jobs.collectAsStateWithLifecycle()
 
-    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.history_title)) }) }) { padding ->
+    Scaffold(
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.history_title)) }) },
+        bottomBar = bottomBar,
+    ) { padding ->
         if (jobs.isEmpty()) {
             Column(Modifier.padding(padding)) {
                 EmptyState(
@@ -58,12 +65,21 @@ fun HistoryScreen(container: AppContainer, onOpenJob: (Long) -> Unit) {
             LazyColumn(
                 Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                    .padding(padding),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    start = com.sortfold.app.ui.theme.Spacing.lg,
+                    end = com.sortfold.app.ui.theme.Spacing.lg,
+                    top = com.sortfold.app.ui.theme.Spacing.md,
+                    bottom = com.sortfold.app.ui.theme.Spacing.lg,
+                ),
+                verticalArrangement = Arrangement.spacedBy(com.sortfold.app.ui.theme.Spacing.sm),
             ) {
                 items(jobs, key = { it.id }) { job ->
-                    HistoryCard(job, onClick = { onOpenJob(job.id) })
+                    HistoryCard(
+                        job,
+                        onClick = { onOpenJob(job.id) },
+                        modifier = Modifier.animateItem(),
+                    )
                 }
             }
         }
@@ -71,8 +87,8 @@ fun HistoryScreen(container: AppContainer, onOpenJob: (Long) -> Unit) {
 }
 
 @Composable
-private fun HistoryCard(job: SortJobEntity, onClick: () -> Unit) {
-    Card(onClick = onClick) {
+private fun HistoryCard(job: SortJobEntity, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Card(onClick = onClick, modifier = modifier) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(
                 Modifier.fillMaxWidth(),

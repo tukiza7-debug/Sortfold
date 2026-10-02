@@ -1,33 +1,43 @@
 package com.sortfold.app.ui.common
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.unit.dp
 import com.sortfold.app.ui.theme.LocalReducedMotion
+import com.sortfold.app.ui.theme.Motion
+import kotlinx.coroutines.delay
 
 /**
  * The Sortfold loader: three bars inside a folder outline that shift into
@@ -72,7 +82,7 @@ fun SortedBarsLoader(
                 topLeft = Offset(w * 0.08f, h * 0.24f),
                 size = Size(w * 0.84f, h * 0.56f),
                 cornerRadius = CornerRadius(w * 0.09f),
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke),
+                style = Stroke(width = stroke),
             )
             // Folder tab
             drawRoundRect(
@@ -80,7 +90,7 @@ fun SortedBarsLoader(
                 topLeft = Offset(w * 0.08f, h * 0.16f),
                 size = Size(w * 0.30f, h * 0.14f),
                 cornerRadius = CornerRadius(w * 0.05f),
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke),
+                style = Stroke(width = stroke),
             )
             // Three bars shifting from scattered x-offsets into left alignment
             val barWidths = listOf(0.42f, 0.26f, 0.34f)
@@ -99,7 +109,42 @@ fun SortedBarsLoader(
     }
 }
 
-/** Standard empty state: icon slot-free, one line of explanation. */
+/**
+ * Shows [content] only when [busy] has lasted longer than [Motion.LOADER_DELAY_MS],
+ * then keeps it on screen at least [Motion.LOADER_MIN_VISIBLE_MS] so it never
+ * flashes. The only allowed infinite animation lives inside the loader.
+ */
+@Composable
+fun DelayedLoader(busy: Boolean, label: String, modifier: Modifier = Modifier) {
+    var show by remember { mutableStateOf(false) }
+    var shownAt by remember { mutableStateOf(Long.MAX_VALUE) }
+
+    LaunchedEffect(busy) {
+        if (busy) {
+            delay(Motion.LOADER_DELAY_MS)
+            show = true
+            shownAt = System.currentTimeMillis()
+        } else if (show) {
+            val elapsed = System.currentTimeMillis() - shownAt
+            if (elapsed < Motion.LOADER_MIN_VISIBLE_MS) {
+                delay(Motion.LOADER_MIN_VISIBLE_MS - elapsed)
+            }
+            show = false
+        }
+    }
+
+    val reduced = LocalReducedMotion.current
+    AnimatedVisibility(
+        visible = show,
+        modifier = modifier,
+        enter = if (reduced) fadeIn(tween(1)) else fadeIn(Motion.small()),
+        exit = if (reduced) fadeOut(tween(1)) else fadeOut(Motion.small()),
+    ) {
+        SortedBarsLoader(label = label)
+    }
+}
+
+/** Standard empty state: logo-derived mark, one line of explanation. */
 @Composable
 fun EmptyState(title: String, description: String, modifier: Modifier = Modifier) {
     Column(
@@ -119,13 +164,23 @@ fun EmptyState(title: String, description: String, modifier: Modifier = Modifier
     }
 }
 
-/** Standard error state used by every screen that can fail. */
+/**
+ * Standard error state used by every screen that can fail. Inline, in plain
+ * language, with at least one next action. Announced to TalkBack via a live
+ * region so a failing step is never silent.
+ */
 @Composable
-fun ErrorState(title: String, description: String, modifier: Modifier = Modifier, retry: (() -> Unit)? = null) {
+fun ErrorState(
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier,
+    actions: (@Composable RowScope.() -> Unit)? = null,
+) {
     Column(
         modifier
             .fillMaxWidth()
-            .padding(24.dp),
+            .padding(24.dp)
+            .semantics { liveRegion = LiveRegionMode.Polite },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -135,10 +190,11 @@ fun ErrorState(title: String, description: String, modifier: Modifier = Modifier
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        if (retry != null) {
-            Row(horizontalArrangement = Arrangement.Center) {
-                androidx.compose.material3.TextButton(onClick = retry) { Text(androidx.compose.ui.res.stringResource(com.sortfold.app.R.string.action_retry)) }
-            }
+        if (actions != null) {
+            androidx.compose.foundation.layout.Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                content = actions,
+            )
         }
     }
 }

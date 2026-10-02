@@ -32,6 +32,8 @@ class ErrorExporter(private val context: Context) {
         val appVersion: String,
         val androidVersion: String,
         val deviceModel: String,
+        val versionCode: Long = 0,
+        val buildId: String = "",
     )
 
     data class ExportResult(val file: File, val count: Int)
@@ -55,7 +57,13 @@ class ErrorExporter(private val context: Context) {
             out.write(
                 json.encodeToString(
                     errors.map {
-                        ErrorJson(it.timestamp, it.module, it.severity, it.type, it.message, it.stackTrace, it.jobId, it.appVersion, it.androidVersion, it.deviceModel)
+                        ErrorJson(
+                            it.timestamp, it.module, it.severity, it.type,
+                            PathMasker.maskText(it.message, includeFullPaths),
+                            it.stackTrace?.let { s -> PathMasker.maskText(s, includeFullPaths) },
+                            it.jobId, it.appVersion, it.androidVersion, it.deviceModel,
+                            it.versionCode, it.buildId,
+                        )
                     },
                 ).toByteArray(),
             )
@@ -83,10 +91,10 @@ class ErrorExporter(private val context: Context) {
                     appendLine("== $lastDay ==")
                 }
                 appendLine("[$day] ${e.severity} / ${e.module} / ${e.type}")
-                appendLine("Message: ${e.message}")
+                appendLine("Message: ${PathMasker.maskText(e.message, includeFullPaths)}")
                 if (e.jobId != null) appendLine("Job: #${e.jobId}")
-                appendLine("Device: ${e.deviceModel}, Android ${e.androidVersion}, app ${e.appVersion}")
-                e.stackTrace?.let { appendLine(it) }
+                appendLine("Device: ${e.deviceModel}, Android ${e.androidVersion}, app ${e.appVersion} (${e.versionCode}) ${e.buildId}".trimEnd())
+                e.stackTrace?.let { appendLine(PathMasker.maskText(it, includeFullPaths)) }
                 appendLine()
             }
             appendLine("Note: personal folder paths are ${if (includeFullPaths) "included" else "masked to file names only"}.")

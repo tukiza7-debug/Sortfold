@@ -37,18 +37,16 @@ class SortfoldApp : Application(), Configuration.Provider {
 }
 
 /** Manual dependency container: small, explicit, easy to audit. */
-class AppContainer(private val app: SortfoldApp) {
-
-    val appContext: android.content.Context get() = app
+class AppContainer(val appContext: android.content.Context) {
 
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    val database: SortfoldDatabase by lazy { SortfoldDatabase.build(app) }
-    val settingsRepository: SettingsRepository by lazy { SettingsRepository(app) }
-    val errorRepository: ErrorRepository by lazy { ErrorRepository(app, database) }
-    val updateRepository: UpdateRepository by lazy { UpdateRepository(app) }
-    val scanner: MediaScanner by lazy { MediaScanner(app) }
-    val mover: Mover by lazy { Mover(app) }
-    val undoManager: UndoManager by lazy { UndoManager(app, database) }
-    val errorExporter: ErrorExporter by lazy { ErrorExporter(app) }
+    val database: SortfoldDatabase by lazy { SortfoldDatabase.build(appContext) }
+    val settingsRepository: SettingsRepository by lazy { SettingsRepository(appContext) }
+    val errorRepository: ErrorRepository by lazy { ErrorRepository(appContext, database) }
+    val updateRepository: UpdateRepository by lazy { UpdateRepository(appContext) }
+    val scanner: MediaScanner by lazy { MediaScanner(appContext) }
+    val mover: Mover by lazy { Mover(appContext) }
+    val undoManager: UndoManager by lazy { UndoManager(appContext, database) }
+    val errorExporter: ErrorExporter by lazy { ErrorExporter(appContext) }
 }

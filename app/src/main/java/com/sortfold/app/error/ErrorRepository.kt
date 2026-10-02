@@ -38,6 +38,8 @@ class ErrorRepository(private val context: Context, private val db: SortfoldData
                 appVersion = appVersion(),
                 androidVersion = Build.VERSION.RELEASE ?: "?",
                 deviceModel = deviceModel(),
+                versionCode = versionCode(),
+                buildId = com.sortfold.app.BuildConfig.GIT_SHA,
             ),
         )
     }
@@ -45,6 +47,10 @@ class ErrorRepository(private val context: Context, private val db: SortfoldData
     private fun appVersion(): String = runCatching {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "?"
     }.getOrDefault("?")
+
+    private fun versionCode(): Long = runCatching {
+        context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode
+    }.getOrDefault(0L)
 
     private fun deviceModel(): String = "${Build.MANUFACTURER} ${Build.MODEL}".trim()
 

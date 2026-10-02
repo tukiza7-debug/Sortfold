@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Update check over HTTPS against api.github.com; the only network use. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Media read access: granular on 13+, full read on 12 and below. -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
@@ -27,6 +30,7 @@
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Sortfold.Splash"
         tools:targetApi="35">
 
@@ -39,6 +43,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Inert host for JVM (Robolectric) Compose UI tests; never shown to users. -->
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:exported="false" />
 
         <!-- Persists the in-app language choice on Android 12 and below. -->
         <service

@@ -1,4 +1,0 @@
-/home/z/my-project/Sortfold/lint.xml:7: Warning: Unexpected attribute path, expected id, in or severity [LintWarning]
-    <issue id="ObsoleteSdkInt" severity="ignore" path="res/mipmap-anydpi-v26" />
-    ^
-0 errors, 1 warnings

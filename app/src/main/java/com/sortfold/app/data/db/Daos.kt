@@ -81,6 +81,13 @@ interface ErrorDao {
     @Query("SELECT * FROM error_reports WHERE timestamp >= :since ORDER BY timestamp DESC")
     suspend fun since(since: Long): List<ErrorEntity>
 
+    /** All entries identical to the given one (same module + type + message). */
+    @Query(
+        "SELECT * FROM error_reports WHERE module = :module AND type = :type AND message = :message " +
+            "ORDER BY timestamp DESC",
+    )
+    fun observeOccurrences(module: String, type: String, message: String): Flow<List<ErrorEntity>>
+
     @Query("DELETE FROM error_reports WHERE id = :id")
     suspend fun delete(id: Long)
 

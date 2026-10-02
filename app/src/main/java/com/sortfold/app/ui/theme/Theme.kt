@@ -76,6 +76,19 @@ private val DarkColors = darkColorScheme(
 
 val LocalReducedMotion = staticCompositionLocalOf { false }
 
+/** The one spacing scale. No other dp constant may be used for layout gaps. */
+object Spacing {
+    val xs = 4.dp
+    val sm = 8.dp
+    val md = 12.dp
+    val lg = 16.dp
+    val xl = 24.dp
+    val xxl = 32.dp
+
+    /** Maximum readable content width on expanded layouts. */
+    val maxContentWidth = 720.dp
+}
+
 private val SortfoldTypography = Typography().run {
     copy(
         headlineSmall = headlineSmall.copy(fontWeight = FontWeight.SemiBold, fontSize = 24.sp),

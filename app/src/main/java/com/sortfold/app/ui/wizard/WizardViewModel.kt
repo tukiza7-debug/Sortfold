@@ -55,7 +55,11 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
         private set
     var scanning by mutableStateOf(false)
         private set
-    var scanError by mutableStateOf<String?>(null)
+
+    /** Typed scan failure: the reason drives the friendly message and the actions. */
+    data class ScanFailure(val reason: com.sortfold.app.core.scanner.ScanFailedException.Reason?, val detail: String)
+
+    var scanError by mutableStateOf<ScanFailure?>(null)
         private set
     var mediaReadDenied by mutableStateOf(false)
         private set
@@ -192,10 +196,18 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
                 suggestions = ModeSuggester.suggest(files, treeLabel)
                 refreshLivePreview()
                 scanning = false
+            } catch (e: com.sortfold.app.core.scanner.ScanFailedException) {
+                files = emptyList()
+                scanning = false
+                scanError = ScanFailure(e.reason, e.message ?: e.javaClass.simpleName)
+                container.errorRepository.log(
+                    "scanner", com.sortfold.app.error.ErrorRepository.Severity.ERROR,
+                    e.javaClass.simpleName, "Scan failed for $treeLabel: ${e.message}", e.stackTraceToString(),
+                )
             } catch (e: Exception) {
                 files = emptyList()
                 scanning = false
-                scanError = e.message ?: "scan-failed"
+                scanError = ScanFailure(null, e.message ?: "scan-failed")
                 container.errorRepository.log(
                     "scanner", com.sortfold.app.error.ErrorRepository.Severity.ERROR,
                     e.javaClass.simpleName, "Scan failed for $treeLabel: ${e.message}", e.stackTraceToString(),

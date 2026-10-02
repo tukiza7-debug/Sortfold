@@ -4,7 +4,6 @@
 
     <string name="nav_home">الرئيسية</string>
     <string name="nav_history">السجل</string>
-    <string name="nav_errors">الأخطاء</string>
     <string name="nav_settings">الإعدادات</string>
 
     <string name="action_back">رجوع</string>
@@ -279,8 +278,7 @@
     <string name="settings_auto_update">التحقق من التحديثات تلقائيًا</string>
     <string name="settings_current_version">الإصدار الحالي: %1$s</string>
     <string name="settings_check_now">تحقق الآن</string>
-    <string name="update_check_failed">تعذر الوصول إلى GitHub. تحقق من اتصالك.</string>
-    <string name="update_up_to_date">أنت على أحدث إصدار.</string>
+    <string name="update_up_to_date">أنت تستخدم الإصدار الأحدث. تم التحقق %1$s.</string>
     <string name="update_available_short">الإصدار %1$s متاح على GitHub Releases.</string>
 
     <string name="settings_storage">التخزين</string>
@@ -306,4 +304,41 @@
     <string name="battery_title">توقف إحدى مهام الخلفية</string>
     <string name="battery_body">قاطع النظام عملية فرز طويلة. يمكنك استثناء Sortfold من تحسين البطارية ليتتمكن من الإنهاء. هذا اختياري ولا يُعرض إلا بعد مقاطعة كهذه.</string>
     <string name="battery_allow">السماح</string>
+    <!-- Error Library filters -->
+    <string name="filter_severity">الخطورة</string>
+    <string name="filter_module">الوحدة</string>
+    <string name="chip_all">الكل</string>
+    <string name="module_updater">التحديثات</string>
+    <string name="module_settings">الإعدادات</string>
+    <string name="errors_group_count">×%1$d</string>
+    <string name="errors_occurrences">حدث %1$d مرة</string>
+
+    <!-- Scan failure (inline, never silent) -->
+    <string name="scan_error_permission">تم إلغاء الإذن بالوصول إلى “%1$s”. امنح الإذن مجددًا أو اختر مجلدًا آخر.</string>
+    <string name="scan_error_generic">تعذّرت قراءة “%1$s”. %2$s</string>
+    <string name="wizard_choose_another">اختيار مجلد آخر</string>
+
+    <!-- Settings groups -->
+    <string name="settings_theme">المظهر</string>
+    <string name="settings_destination">مجلد الوجهة</string>
+    <string name="settings_destination_none">غير محدد (الترتيب داخل المجلد المصدر)</string>
+    <string name="settings_auto_rules_desc">إنشاء القواعد التي تعمل يوميًا وتعديلها.</string>
+    <string name="settings_diagnostics">التشخيص</string>
+    <string name="settings_error_library_support">%1$d من الإدخالات · تُحفظ 30 يومًا</string>
+    <string name="settings_include_full_paths">تضمين المسارات الكاملة</string>
+    <string name="settings_include_full_paths_desc">عرض مسارات المجلدات الكاملة في مكتبة الأخطاء والتصديرات بدلًا من المسارات المقنّعة.</string>
+
+    <!-- Update check states -->
+    <string name="update_checking">جارٍ التحقق من GitHub…</string>
+    <string name="settings_last_checked">آخر تحقق: %1$s</string>
+    <string name="settings_last_checked_never">لم يتم التحقق من قبل</string>
+    <string name="update_download">تنزيل حزمة APK</string>
+    <string name="update_err_offline">أنت غير متصل بالإنترنت. تحقق من اتصالك.</string>
+    <string name="update_err_timeout">انتهت مهلة الاتصال بـ GitHub. حاول مجددًا.</string>
+    <string name="update_err_no_release">لا يوجد إصدار منشور بعد.</string>
+    <string name="update_err_rate_limit">تم الوصول إلى حد معدل GitHub. حاول لاحقًا.</string>
+    <string name="update_err_rate_limit_until">تم الوصول إلى حد معدل GitHub. حاول مجددًا بعد %1$s.</string>
+    <string name="update_err_http">استجاب GitHub بخطأ غير متوقع. التفاصيل في مكتبة الأخطاء.</string>
+    <string name="update_err_malformed">أرسل GitHub استجابة لم يتمكن التطبيق من قراءتها.</string>
+    <string name="update_err_no_apk">الإصدار الأخير لا يحتوي على ملف APK مرفق بعد.</string>
 </resources>

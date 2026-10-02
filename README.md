@@ -67,6 +67,10 @@ Or build it yourself from source (below).
 
 Switching is instant via per-app language settings (Android 13+) and in-app switching (Android 10–12).
 
+## Settings
+
+Nine groups, every row functional: Language, Appearance (theme, dynamic color, reduce animations), Sorting defaults (mode, duplicate handling, destination folder, confirm-before-apply, large-batch threshold, auto-sort rules), History (retention, clear), Notifications, Updates (auto-check, check now, current version), Storage (app data size, clear cache), Diagnostics (Error Library with entry count and 30-day retention, include-full-paths toggle) and About. The Error Library is a sub-screen of Settings, deep-linked from scan errors, update errors and crash notices; identical errors are grouped with a repeat count and exported as a ZIP with paths masked by default.
+
 ## Build from source
 
 ```bash

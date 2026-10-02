@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.sortfold.app.StringsParityTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:50:34" hostname="c-6abf6a90-14810412-840fa9da916c" time="0.282">
-  <properties/>
-  <testcase name="format placeholders match the default locale" classname="com.sortfold.app.StringsParityTest" time="0.256"/>
-  <testcase name="all languages define the same keys as the default locale" classname="com.sortfold.app.StringsParityTest" time="0.023"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

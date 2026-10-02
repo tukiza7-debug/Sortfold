@@ -35,6 +35,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -69,6 +78,7 @@ import com.sortfold.app.core.model.NameRule
 import com.sortfold.app.core.model.SortMode
 import com.sortfold.app.data.db.MoveLogEntity
 import com.sortfold.app.data.db.SortJobEntity
+import com.sortfold.app.ui.common.DelayedLoader
 import com.sortfold.app.ui.common.EmptyState
 import com.sortfold.app.ui.common.ErrorState
 import com.sortfold.app.ui.common.Formatters
@@ -77,6 +87,7 @@ import com.sortfold.app.ui.common.SortedBarsLoader
 import com.sortfold.app.ui.home.simpleFactory
 import com.sortfold.app.ui.permissions.MediaPermissions
 import com.sortfold.app.ui.theme.LocalReducedMotion
+import com.sortfold.app.ui.theme.Motion
 
 @Composable
 fun jobStatusLabel(status: String): String = stringResource(
@@ -96,7 +107,12 @@ fun jobStatusLabel(status: String): String = stringResource(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WizardScreen(container: AppContainer, expanded: Boolean, onExit: () -> Unit) {
+fun WizardScreen(
+    container: AppContainer,
+    expanded: Boolean,
+    onExit: () -> Unit,
+    onOpenErrorLibrary: () -> Unit = {},
+) {
     val vm: WizardViewModel = viewModel(factory = simpleFactory { WizardViewModel(container) })
     val context = LocalContext.current
 
@@ -177,7 +193,7 @@ fun WizardScreen(container: AppContainer, expanded: Boolean, onExit: () -> Unit)
                         .padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    StepContent(vm, context, job, previewRows)
+                    StepContent(vm, context, job, previewRows, onOpenErrorLibrary)
                 }
                 Column(
                     Modifier
@@ -195,7 +211,7 @@ fun WizardScreen(container: AppContainer, expanded: Boolean, onExit: () -> Unit)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                StepContent(vm, context, job, previewRows)
+                StepContent(vm, context, job, previewRows, onOpenErrorLibrary)
             }
         }
 
@@ -269,13 +285,35 @@ private fun StepContent(
     context: Context,
     job: SortJobEntity?,
     previewRows: List<MoveLogEntity>,
+    onOpenErrorLibrary: () -> Unit,
 ) {
-    when (vm.step) {
-        WizardStep.FOLDER -> FolderStep(vm, context)
-        WizardStep.MODES -> ModesStep(vm)
-        WizardStep.PREVIEW -> PreviewStep(vm, previewRows, context)
-        WizardStep.APPLY -> ApplyStep(vm, job)
-        WizardStep.RESULT -> ResultStep(vm, job, context)
+    val reduced = LocalReducedMotion.current
+    val layoutDir = LocalLayoutDirection.current
+    // Shared-axis X between wizard steps; forward/back follows the direction of travel.
+    AnimatedContent(
+        targetState = vm.step,
+        transitionSpec = {
+            val dir = if (layoutDir == LayoutDirection.Ltr) 1 else -1
+            val forward = targetState.ordinal >= initialState.ordinal
+            if (reduced) {
+                (fadeIn(tween(1))) togetherWith (fadeOut(tween(1)))
+            } else if (forward) {
+                (slideInHorizontally(Motion.enter()) { it / 4 * dir } + fadeIn(Motion.enter())) togetherWith
+                    (slideOutHorizontally(Motion.exit()) { -it / 4 * dir } + fadeOut(Motion.exit()))
+            } else {
+                (slideInHorizontally(Motion.enter()) { -it / 4 * dir } + fadeIn(Motion.enter())) togetherWith
+                    (slideOutHorizontally(Motion.exit()) { it / 4 * dir } + fadeOut(Motion.exit()))
+            }
+        },
+        label = "wizard-step",
+    ) { step ->
+        when (step) {
+            WizardStep.FOLDER -> FolderStep(vm, context, onOpenErrorLibrary)
+            WizardStep.MODES -> ModesStep(vm)
+            WizardStep.PREVIEW -> PreviewStep(vm, previewRows, context)
+            WizardStep.APPLY -> ApplyStep(vm, job)
+            WizardStep.RESULT -> ResultStep(vm, job, context)
+        }
     }
 }
 
@@ -319,7 +357,7 @@ private fun WizardBottomBar(vm: WizardViewModel, context: Context, onAdvance: ()
 // ---------------- Step 1: choose folder ----------------
 
 @Composable
-private fun FolderStep(vm: WizardViewModel, context: Context) {
+private fun FolderStep(vm: WizardViewModel, context: Context, onOpenErrorLibrary: () -> Unit) {
     var showMediaRationale by rememberSaveable { mutableStateOf(false) }
 
     val pickFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
@@ -382,13 +420,24 @@ private fun FolderStep(vm: WizardViewModel, context: Context) {
         }
 
         if (vm.scanning) {
-            SortedBarsLoader(label = stringResource(R.string.wizard_scanning))
+            DelayedLoader(busy = vm.scanning, label = stringResource(R.string.wizard_scanning))
         }
-        vm.scanError?.let {
+        vm.scanError?.let { failure ->
             ErrorState(
                 title = stringResource(R.string.wizard_scan_failed),
-                description = it,
-                retry = { vm.scan(context) },
+                description = when (failure.reason) {
+                    com.sortfold.app.core.scanner.ScanFailedException.Reason.PERMISSION_REVOKED ->
+                        stringResource(R.string.scan_error_permission, vm.treeLabel)
+                    else ->
+                        stringResource(R.string.scan_error_generic, vm.treeLabel, failure.detail)
+                },
+                actions = {
+                    TextButton(onClick = { vm.scan(context) }) { Text(stringResource(R.string.action_retry)) }
+                    TextButton(onClick = { pickFolder.launch(null) }) {
+                        Text(stringResource(R.string.wizard_choose_another))
+                    }
+                    TextButton(onClick = onOpenErrorLibrary) { Text(stringResource(R.string.errors_title)) }
+                },
             )
         }
 

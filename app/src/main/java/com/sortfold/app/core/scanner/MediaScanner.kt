@@ -19,8 +19,11 @@ class MediaScanner(private val context: Context) {
 
     private fun scanInternal(treeUri: Uri, onProgress: (Int) -> Unit): ScanResult {
         val resolver = context.contentResolver
+        // A tree URI must be resolved with getTreeDocumentId; getDocumentId
+        // would throw IllegalArgumentException on exactly this input.
+        val rootDocId = DocumentsContract.getTreeDocumentId(treeUri)
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            treeUri, DocumentsContract.getDocumentId(treeUri),
+            treeUri, rootDocId,
         )
         val projection = arrayOf(
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
@@ -31,7 +34,14 @@ class MediaScanner(private val context: Context) {
         )
         val files = ArrayList<MediaFile>(256)
         val folders = ArrayList<String>()
-        resolver.query(childrenUri, projection, null, null, null)?.use { c ->
+        val cursor = try {
+            resolver.query(childrenUri, projection, android.os.Bundle(), null)
+        } catch (e: SecurityException) {
+            throw ScanFailedException(ScanFailedException.Reason.PERMISSION_REVOKED, e)
+        } catch (e: IllegalArgumentException) {
+            throw ScanFailedException(ScanFailedException.Reason.PROVIDER_ERROR, e)
+        }
+        cursor?.use { c ->
             val idCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
             val nameCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
             val mimeCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)

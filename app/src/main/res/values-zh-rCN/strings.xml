@@ -4,7 +4,6 @@
 
     <string name="nav_home">首页</string>
     <string name="nav_history">历史</string>
-    <string name="nav_errors">错误</string>
     <string name="nav_settings">设置</string>
 
     <string name="action_back">返回</string>
@@ -269,8 +268,7 @@
     <string name="settings_auto_update">自动检查更新</string>
     <string name="settings_current_version">当前版本：%1$s</string>
     <string name="settings_check_now">立即检查</string>
-    <string name="update_check_failed">无法连接 GitHub。请检查网络。</string>
-    <string name="update_up_to_date">已是最新版本。</string>
+    <string name="update_up_to_date">您使用的是最新版本。检查时间：%1$s。</string>
     <string name="update_available_short">版本 %1$s 已发布在 GitHub Releases。</string>
 
     <string name="settings_storage">存储</string>
@@ -296,4 +294,41 @@
     <string name="battery_title">有后台任务被系统停止</string>
     <string name="battery_body">系统中断了一次较长的整理任务。你可以将 Sortfold 加入电池优化豁免名单以便完成任务。此项为可选，且仅在这种中断发生后才会出现。</string>
     <string name="battery_allow">允许</string>
+    <!-- Error Library filters -->
+    <string name="filter_severity">严重程度</string>
+    <string name="filter_module">模块</string>
+    <string name="chip_all">全部</string>
+    <string name="module_updater">更新</string>
+    <string name="module_settings">设置</string>
+    <string name="errors_group_count">×%1$d</string>
+    <string name="errors_occurrences">出现 %1$d 次</string>
+
+    <!-- Scan failure (inline, never silent) -->
+    <string name="scan_error_permission">对“%1$s”的访问权限已被撤销。请重新授权或选择其他文件夹。</string>
+    <string name="scan_error_generic">无法读取“%1$s”。%2$s</string>
+    <string name="wizard_choose_another">选择其他文件夹</string>
+
+    <!-- Settings groups -->
+    <string name="settings_theme">主题</string>
+    <string name="settings_destination">目标文件夹</string>
+    <string name="settings_destination_none">未设置（在源文件夹内整理）</string>
+    <string name="settings_auto_rules_desc">创建和编辑每日运行的规则。</string>
+    <string name="settings_diagnostics">诊断</string>
+    <string name="settings_error_library_support">%1$d 条记录 · 保留 30 天</string>
+    <string name="settings_include_full_paths">包含完整路径</string>
+    <string name="settings_include_full_paths_desc">在错误库和导出文件中显示完整文件夹路径，而不是已遮盖的路径。</string>
+
+    <!-- Update check states -->
+    <string name="update_checking">正在检查 GitHub…</string>
+    <string name="settings_last_checked">上次检查：%1$s</string>
+    <string name="settings_last_checked_never">从未检查过</string>
+    <string name="update_download">下载 APK</string>
+    <string name="update_err_offline">您当前处于离线状态。请检查网络连接。</string>
+    <string name="update_err_timeout">连接 GitHub 超时。请重试。</string>
+    <string name="update_err_no_release">还没有已发布的版本。</string>
+    <string name="update_err_rate_limit">已达到 GitHub 的频率限制。请稍后再试。</string>
+    <string name="update_err_rate_limit_until">已达到 GitHub 的频率限制。请在 %1$s 后重试。</string>
+    <string name="update_err_http">GitHub 返回了意外错误。详情请见错误库。</string>
+    <string name="update_err_malformed">GitHub 返回的响应无法被应用解析。</string>
+    <string name="update_err_no_apk">最新版本尚未附带 APK 文件。</string>
 </resources>

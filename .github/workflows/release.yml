@@ -51,6 +51,7 @@ jobs:
           ./gradlew assembleRelease bundleRelease --stacktrace
           -PversionName=${{ steps.ver.outputs.version }}
           -PversionCode=${{ steps.ver.outputs.code }}
+          -PgithubRepo=${{ github.repository }}
 
       - name: Rename artifacts
         run: |

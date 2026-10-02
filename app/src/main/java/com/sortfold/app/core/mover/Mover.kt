@@ -43,7 +43,8 @@ class Mover(private val context: Context) {
                 DocumentsContract.Document.COLUMN_DISPLAY_NAME,
                 DocumentsContract.Document.COLUMN_MIME_TYPE,
             ),
-            null, null, null,
+            android.os.Bundle(),
+            null,
         )?.use { c ->
             val idCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
             val nameCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
@@ -132,7 +133,7 @@ class Mover(private val context: Context) {
 
     private fun childDocId(treeUri: Uri, parentDocId: String, name: String): String? {
         val children = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, parentDocId)
-        resolver.query(children, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
+        resolver.query(children, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME), android.os.Bundle(), null)
             ?.use { c ->
                 val idCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
                 val nameCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
@@ -146,7 +147,7 @@ class Mover(private val context: Context) {
     fun listNames(treeUri: Uri, parentDocId: String): Set<String> {
         val out = HashSet<String>()
         val children = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, parentDocId)
-        resolver.query(children, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)?.use { c ->
+        resolver.query(children, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), android.os.Bundle(), null)?.use { c ->
             val nameCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
             while (c.moveToNext()) out += c.getString(nameCol)
         }
@@ -154,7 +155,7 @@ class Mover(private val context: Context) {
     }
 
     private fun querySize(uri: Uri): Long = runCatching {
-        resolver.query(uri, arrayOf(DocumentsContract.Document.COLUMN_SIZE), null, null, null)?.use { c ->
+        resolver.query(uri, arrayOf(DocumentsContract.Document.COLUMN_SIZE), android.os.Bundle(), null)?.use { c ->
             if (c.moveToFirst()) c.getLong(0) else -1L
         } ?: -1L
     }.getOrDefault(-1L)

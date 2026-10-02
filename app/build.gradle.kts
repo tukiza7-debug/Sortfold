@@ -21,7 +21,26 @@ android {
         minSdk = 29
         targetSdk = 35
         versionCode = ciVersionCode ?: 1
-        versionName = ciVersionName ?: "1.0.0"
+        versionName = ciVersionName ?: "1.0.1"
+
+        // Repo injected by CI (-PgithubRepo=owner/name). A blank value would
+        // silently break the in-app update check, so the build fails instead.
+        val repo = (project.findProperty("githubRepo") as String?) ?: "tukiza7-debug/Sortfold"
+        require(repo.isNotBlank() && repo.contains('/')) {
+            "githubRepo must be in owner/name form, got: \"$repo\""
+        }
+        buildConfigField("String", "GITHUB_REPO", "\"$repo\"")
+
+        // Short git sha: identifies the exact build in error reports.
+        val sha = try {
+            val p = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+                .directory(rootProject.projectDir)
+                .start()
+            p.inputStream.bufferedReader().readText().trim().also { p.waitFor() }
+        } catch (_: Exception) {
+            ""
+        }
+        buildConfigField("String", "GIT_SHA", "\"${sha.ifBlank { "dev" }}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -92,7 +111,10 @@ android {
         }
     }
     testOptions {
-        unitTests.isReturnDefaultValues = true
+        unitTests {
+            isReturnDefaultValues = true
+            isIncludeAndroidResources = true
+        }
     }
     lint {
         abortOnError = true
@@ -134,4 +156,10 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.compose.ui.test.junit4)
+    testImplementation(libs.mockwebserver)
+    testImplementation(libs.work.testing)
 }
