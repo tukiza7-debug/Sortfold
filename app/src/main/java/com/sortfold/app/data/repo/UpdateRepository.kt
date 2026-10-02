@@ -20,6 +20,8 @@ import kotlinx.coroutines.withContext
 class UpdateRepository(
     private val context: Context,
     private val client: GithubApiClient = GithubApiClient(),
+    /** Test seam: overrides the connectivity probe when provided. */
+    private val networkOnline: (() -> Boolean)? = null,
 ) {
 
     companion object {
@@ -47,7 +49,9 @@ class UpdateRepository(
             return@withContext CheckResult.Skipped
         }
         try {
-            if (!isNetworkAvailable()) throw GithubApiClient.UpdateException.Offline()
+            if (!(networkOnline?.invoke() ?: isNetworkAvailable())) {
+                throw GithubApiClient.UpdateException.Offline()
+            }
             val latest = client.latestRelease(REPO)
             if (VersionCompare.isNewer(latest.version, currentVersion)) {
                 CheckResult.UpdateAvailable(latest)
@@ -56,6 +60,12 @@ class UpdateRepository(
             }
         } catch (e: GithubApiClient.UpdateException) {
             CheckResult.Failure(e)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Anything unexpected (a bug, a exotic IOException...) still becomes
+            // a typed failure instead of crashing the caller or the worker.
+            CheckResult.Failure(GithubApiClient.UpdateException.Unknown(e))
         }
     }
 

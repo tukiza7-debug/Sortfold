@@ -76,7 +76,9 @@ class MediaScannerTest {
 
     @Test
     fun `empty folder scans to zero files without error`() = runBlocking {
-        FakeDocumentsProvider.addFolder("primary", "EmptyPics")
+        // Seed under the storage ROOT id ("primary:") so the tree the scanner
+        // sees genuinely exists and is empty.
+        FakeDocumentsProvider.addFolder("primary:", "EmptyPics")
         val result = MediaScanner(context).scan(
             Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AEmptyPics"),
         )
@@ -176,15 +178,33 @@ class MoverTest {
     fun `moveOne with RENAME policy produces numbered name`() = runBlocking {
         val mover = Mover(context)
         val rootId = Mover.treeRootDocId(treeUri)
+        val images = mover.ensureFolder(treeUri, rootId, listOf("Images"))
+        // A DIFFERENT photo.jpg already lives in the destination folder.
+        FakeDocumentsProvider.addFile("primary:Pics/Images", "photo.jpg", "image/jpeg", content = ByteArray(8))
         val outcome = mover.moveOne(
-            treeUri, "primary:Pics/photo.jpg", rootId, "photo.jpg", "image/jpeg",
+            treeUri, "primary:Pics/photo.jpg", images, "photo.jpg", "image/jpeg",
             PlanAction.RENAME,
         )
         assertTrue("outcome=$outcome", outcome is Mover.Outcome.Moved)
         // Rename-move: the source is gone, the content lives under the new name.
         assertFalse(File(FakeDocumentsProvider.root, "Pics/photo.jpg").exists())
         // The rename convention skips the taken base name: photo (2).jpg.
-        assertEquals(2048L, File(FakeDocumentsProvider.root, "Pics/photo (2).jpg").length())
+        assertEquals(2048L, File(FakeDocumentsProvider.root, "Pics/Images/photo (2).jpg").length())
+        // The pre-existing destination file is untouched.
+        assertEquals(8L, File(FakeDocumentsProvider.root, "Pics/Images/photo.jpg").length())
+    }
+
+    @Test
+    fun `moveOne with RENAME inside the same folder is a no-op skip`() = runBlocking {
+        val mover = Mover(context)
+        val rootId = Mover.treeRootDocId(treeUri)
+        val outcome = mover.moveOne(
+            treeUri, "primary:Pics/photo.jpg", rootId, "photo.jpg", "image/jpeg",
+            PlanAction.RENAME,
+        )
+        assertTrue(outcome is Mover.Outcome.SkippedDuplicate)
+        assertTrue(File(FakeDocumentsProvider.root, "Pics/photo.jpg").exists())
+        assertFalse(File(FakeDocumentsProvider.root, "Pics/photo (2).jpg").exists())
     }
 
     @Test

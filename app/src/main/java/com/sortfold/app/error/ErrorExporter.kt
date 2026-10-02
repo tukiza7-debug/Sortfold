@@ -38,13 +38,24 @@ class ErrorExporter(private val context: Context) {
 
     data class ExportResult(val file: File, val count: Int)
 
+    companion object {
+        /** RFC-4180 field escaping: quotes doubled, field wrapped when needed. */
+        fun csvField(raw: String): String {
+            val needsQuoting = raw.contains(',') || raw.contains('"') ||
+                raw.contains('\n') || raw.contains('\r')
+            return if (needsQuoting) "\"${raw.replace("\"", "\"\"")}\"" else raw
+        }
+    }
+
     suspend fun export(
         errors: List<ErrorEntity>,
         movesCsv: String,
         includeFullPaths: Boolean,
     ): ExportResult = withContext(Dispatchers.IO) {
         val dir = File(context.cacheDir, "exports").apply { mkdirs() }
-        val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
+        // Millisecond stamp: two exports within the same second used to
+        // overwrite each other's zip.
+        val stamp = SimpleDateFormat("yyyyMMdd-HHmmss-SSS", Locale.US).format(Date())
         val zip = File(dir, "sortfold-errors-$stamp.zip")
 
         ZipOutputStream(zip.outputStream().buffered()).use { out ->

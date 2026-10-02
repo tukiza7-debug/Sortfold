@@ -142,7 +142,17 @@ class ErrorsViewModel(private val container: AppContainer) : ViewModel() {
         val sb = StringBuilder("job_id,seq,file,dest_folder,status,size_bytes\n")
         container.database.sortJobDao().recent(50).forEach { job ->
             container.database.moveLogDao().byJob(job.id).forEach { m ->
-                sb.append("${m.jobId},${m.seq},\"${m.displayName}\",\"${m.destFolder}\",${m.status},${m.sizeBytes}\n")
+                // Names are user data: escape quotes/commas/newlines (RFC 4180).
+                sb.append(
+                    listOf(
+                        m.jobId.toString(),
+                        m.seq.toString(),
+                        com.sortfold.app.error.ErrorExporter.csvField(m.displayName),
+                        com.sortfold.app.error.ErrorExporter.csvField(m.destFolder),
+                        m.status,
+                        m.sizeBytes.toString(),
+                    ).joinToString(","),
+                ).append('\n')
             }
         }
         return sb.toString()
@@ -166,6 +176,14 @@ class ErrorsViewModel(private val container: AppContainer) : ViewModel() {
                     )
                 }
                 .sortedByDescending { it.lastTimestamp }
+
+        /**
+         * Stable LazyColumn key for a group. The message hash is part of the
+         * key: two DIFFERENT errors sharing module+type+millisecond timestamp
+         * used to produce identical keys and crash the list.
+         */
+        fun groupKey(group: ErrorGroup): String =
+            "${group.module}-${group.type}-${group.lastTimestamp}-${group.message.hashCode()}"
     }
 }
 
@@ -336,7 +354,7 @@ fun ErrorLibraryScreen(
                     val byDay = grouped.groupBy { Formatters.day(it.lastTimestamp) }
                     byDay.forEach { (day, list) ->
                         item(key = "day-$day") { SectionHeader(day) }
-                        items(list, key = { "${it.module}-${it.type}-${it.lastTimestamp}" }) { group ->
+                        items(list, key = { ErrorsViewModel.groupKey(it) }) { group ->
                             ErrorGroupCard(
                                 group = group,
                                 count = group.count,

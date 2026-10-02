@@ -331,4 +331,5 @@
     <string name="update_err_http">GitHub 返回了意外错误。详情请见错误库。</string>
     <string name="update_err_malformed">GitHub 返回的响应无法被应用解析。</string>
     <string name="update_err_no_apk">最新版本尚未附带 APK 文件。</string>
+    <string name="update_err_unexpected">检查过程中出现了意外情况。详情请查看错误库。</string>
 </resources>

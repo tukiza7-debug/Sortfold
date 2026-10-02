@@ -15,6 +15,7 @@ import com.sortfold.app.core.model.DateGranularity
 import com.sortfold.app.core.model.DuplicatePolicy
 import com.sortfold.app.core.model.SortMode
 import com.sortfold.app.core.mover.Mover
+import com.sortfold.app.core.mover.StorageSafety
 import com.sortfold.app.core.rules.RuleEngine
 import com.sortfold.app.core.rules.SortConfig
 import com.sortfold.app.core.scanner.MediaScanner
@@ -36,13 +37,7 @@ class UpdateCheckWorker(appContext: Context, params: WorkerParameters) : Corouti
                 container.settingsRepository.setLastUpdateCheckAt(System.currentTimeMillis())
                 if (settings.notificationsEnabled) {
                     val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-                    nm.notify(
-                        4242,
-                        ProgressNotifications.completed(
-                            applicationContext, -1L, R.string.notif_update_title,
-                            applicationContext.getString(R.string.notif_update_text, result.release.version),
-                        ),
-                    )
+                    nm.notify(4242, ProgressNotifications.updateAvailable(applicationContext, result.release.version))
                 }
             }
             is UpdateRepository.CheckResult.Failure -> {
@@ -67,6 +62,11 @@ class UpdateCheckWorker(appContext: Context, params: WorkerParameters) : Corouti
                 UNIQUE_NAME, ExistingPeriodicWorkPolicy.KEEP,
                 PeriodicWorkRequestBuilder<UpdateCheckWorker>(1, TimeUnit.DAYS).build(),
             )
+        }
+
+        /** The user turned automatic checks off: the scheduled work must go. */
+        fun cancel(context: Context) {
+            WorkManager.getInstance(context).cancelUniqueWork(UNIQUE_NAME)
         }
     }
 }
@@ -99,13 +99,23 @@ class AutoSortWorker(appContext: Context, params: WorkerParameters) : CoroutineW
                     db.autoRuleDao().setLastRun(rule.id, System.currentTimeMillis())
                     continue
                 }
+                // Same storage gate as the manual wizard: an unattended run
+                // must never fill the disk.
+                val planBytes = items.sumOf { it.sizeBytes }
+                if (StorageSafety.isInsufficientStorage(applicationContext, planBytes)) {
+                    container.errorRepository.log(
+                        "auto-sort", ErrorRepository.Severity.WARNING, "insufficient-storage",
+                        "Rule '${rule.name}' skipped: not enough free storage for ${planBytes} bytes",
+                    )
+                    continue
+                }
                 val now = System.currentTimeMillis()
                 val jobId = db.sortJobDao().insert(
                     SortJobEntity(
                         treeUri = rule.treeUri, destTreeUri = rule.treeUri,
                         modesCsv = rule.modesCsv, duplicatePolicy = rule.duplicatePolicy,
                         status = "RUNNING", totalFiles = items.size,
-                        doneFiles = 0, totalBytes = items.sumOf { it.sizeBytes }, doneBytes = 0,
+                        doneFiles = 0, totalBytes = planBytes, doneBytes = 0,
                         createdAt = now, updatedAt = now, isAuto = true,
                     ),
                 )
@@ -163,16 +173,24 @@ class AutoSortWorker(appContext: Context, params: WorkerParameters) : CoroutineW
 /** Central scheduling entry: called on app start and when settings change. */
 object WorkScheduler {
 
+    const val UPDATE_CHECK_NAME = UpdateCheckWorker.UNIQUE_NAME
+
     private val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default + kotlinx.coroutines.SupervisorJob())
+
+    /**
+     * Applies the scheduling policy implied by the current settings.
+     * Suspending and synchronous so callers (and tests) observe the result;
+     * [scheduleAll] just launches it on the app scope.
+     */
+    suspend fun applyPolicy(context: Context, settings: com.sortfold.app.data.prefs.AppSettings) {
+        ErrorRepository.CleanupWorker.schedule(context)
+        if (settings.autoCheckUpdates) UpdateCheckWorker.schedule(context) else UpdateCheckWorker.cancel(context)
+        if (settings.autoSortEnabled) AutoSortWorker.schedule(context) else AutoSortWorker.cancel(context)
+    }
 
     fun scheduleAll(context: Context) {
         val settings = (context.applicationContext as SortfoldApp).container.settingsRepository
-        ErrorRepository.CleanupWorker.schedule(context)
-        scope.launch {
-            val s = settings.snapshot()
-            if (s.autoCheckUpdates) UpdateCheckWorker.schedule(context)
-            if (s.autoSortEnabled) AutoSortWorker.schedule(context) else AutoSortWorker.cancel(context)
-        }
+        scope.launch { applyPolicy(context, settings.snapshot()) }
     }
 
     /** Resumes a paused/partial job from its last completed file. */

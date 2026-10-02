@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
  * "unknown error", and no token is ever sent or logged (the endpoint is
  * public and unauthenticated).
  */
-class GithubApiClient(private val baseUrl: String = "https://api.github.com/") {
+open class GithubApiClient(private val baseUrl: String = "https://api.github.com/") {
 
     @Serializable
     data class ReleaseAsset(val name: String = "", val browser_download_url: String = "")
@@ -60,6 +60,9 @@ class GithubApiClient(private val baseUrl: String = "https://api.github.com/") {
 
         /** 2xx parsed fine but the release carries no APK asset. */
         class NoApkAsset : UpdateException("no-apk-asset")
+
+        /** Any failure outside the expected taxonomy (bug, OOM, bad state...). */
+        class Unknown(cause: Throwable) : UpdateException("unexpected:${cause.javaClass.simpleName}", cause)
     }
 
     private val http = OkHttpClient.Builder()
@@ -70,7 +73,7 @@ class GithubApiClient(private val baseUrl: String = "https://api.github.com/") {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun latestRelease(repo: String): LatestRelease =
+    open suspend fun latestRelease(repo: String): LatestRelease =
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             val request = Request.Builder()
                 .url("${baseUrl}repos/$repo/releases/latest")

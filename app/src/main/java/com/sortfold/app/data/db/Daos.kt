@@ -27,6 +27,9 @@ interface SortJobDao {
     @Query("SELECT * FROM sort_jobs ORDER BY createdAt DESC LIMIT :limit")
     suspend fun recent(limit: Int): List<SortJobEntity>
 
+    @Query("UPDATE sort_jobs SET totalFiles = :totalFiles, totalBytes = :totalBytes WHERE id = :id")
+    suspend fun updatePlan(id: Long, totalFiles: Int, totalBytes: Long)
+
     @Query("UPDATE sort_jobs SET status = :status, doneFiles = :doneFiles, doneBytes = :doneBytes, updatedAt = :updatedAt, message = :message WHERE id = :id")
     suspend fun updateProgress(id: Long, status: String, doneFiles: Int, doneBytes: Long, updatedAt: Long, message: String?)
 
@@ -62,6 +65,9 @@ interface MoveLogDao {
 
     @Query("DELETE FROM move_logs WHERE jobId IN (SELECT id FROM sort_jobs WHERE createdAt < :cutoff)")
     suspend fun deleteLogsForJobsOlderThan(cutoff: Long): Int
+
+    @Query("DELETE FROM move_logs WHERE jobId = :jobId")
+    suspend fun deleteForJob(jobId: Long): Int
 
     @Query("DELETE FROM move_logs")
     suspend fun clearAll()

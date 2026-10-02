@@ -34,14 +34,26 @@ object RuleEngine {
 
     fun plan(files: List<MediaFile>, config: SortConfig, existingNames: Set<String> = emptySet()): List<PlanItem> {
         val ordered = SortMode.ordered(config.modes)
-        val taken = HashSet(existingNames)
+        // Name collisions are scoped PER DESTINATION FOLDER: two files with the
+        // same name heading to different folders never collide (a global set
+        // used to rename files whose destination was actually free).
+        val takenByFolder = HashMap<String, MutableSet<String>>()
         return files.filter { !it.isDirectory }.map { file ->
-            val folder = ordered.joinToString("/") { segmentFor(it, file, config) }
+            // Empty segments (e.g. NAME_PATTERN with no matching rule) are
+            // dropped, so destinations never end up with trailing slashes.
+            val folder = ordered.map { segmentFor(it, file, config) }
+                .filter { it.isNotEmpty() }
+                .joinToString("/")
             if (folder.isEmpty()) {
                 // No mode selected: nothing to do, still surface the file so the
                 // preview explains itself.
                 PlanItem(file.documentId, file.displayName, file.sizeBytes, file.displayName, "", file.displayName, PlanAction.SKIP_DUPLICATE, "no-sort-mode")
             } else {
+                val taken = takenByFolder.getOrPut(folder) {
+                    // existingNames seeds every folder (callers cannot map them
+                    // to folders); in-app plan collisions are tracked exactly.
+                    HashSet(existingNames)
+                }
                 val desired = file.displayName
                 val (finalName, action, reason) = resolveCollision(desired, taken, config.duplicatePolicy)
                 if (action == PlanAction.SKIP_DUPLICATE) {

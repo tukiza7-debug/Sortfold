@@ -341,4 +341,5 @@
     <string name="update_err_http">استجاب GitHub بخطأ غير متوقع. التفاصيل في مكتبة الأخطاء.</string>
     <string name="update_err_malformed">أرسل GitHub استجابة لم يتمكن التطبيق من قراءتها.</string>
     <string name="update_err_no_apk">الإصدار الأخير لا يحتوي على ملف APK مرفق بعد.</string>
+    <string name="update_err_unexpected">حدث شيء غير متوقع أثناء التحقق. التفاصيل في مكتبة الأخطاء.</string>
 </resources>

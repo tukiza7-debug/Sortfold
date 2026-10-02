@@ -75,6 +75,11 @@ class Mover(private val context: Context) {
     ): Outcome = withContext(Dispatchers.IO) {
         val sourceUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, sourceDocId)
         val sourceSize = querySize(sourceUri)
+        // No-op guard: a file already living in its destination folder must not
+        // be copied onto itself (providers would answer with "photo (1).jpg").
+        if (parentDocIdOf(sourceDocId) == destFolderDocId) {
+            return@withContext Outcome.SkippedDuplicate
+        }
         val existing = listNames(treeUri, destFolderDocId)
         val policy = when (action) {
             com.sortfold.app.core.model.PlanAction.SKIP_DUPLICATE -> return@withContext Outcome.SkippedDuplicate
@@ -85,12 +90,9 @@ class Mover(private val context: Context) {
                 if (displayName in existing) return@withContext Outcome.SkippedDuplicate else displayName
         }
 
-        // Replace: remove the old destination file first.
-        if (action == com.sortfold.app.core.model.PlanAction.REPLACE && displayName in existing) {
-            val oldDoc = childDocId(treeUri, destFolderDocId, displayName) ?: return@withContext Outcome.Failed("replace-target-missing")
-            deleteDoc(treeUri, oldDoc)
-        }
-
+        // Copy FIRST, destroy second: the existing destination (REPLACE) and the
+        // source are only removed once the new copy is verified, so a failed
+        // copy can never lose data.
         val destUri = runCatching {
             DocumentsContract.createDocument(
                 resolver,
@@ -100,35 +102,57 @@ class Mover(private val context: Context) {
             )
         }.getOrNull() ?: return@withContext Outcome.Failed("create-file-failed")
 
-        val copied = runCatching {
+        val copyResult = runCatching {
             resolver.openInputStream(sourceUri)?.use { input ->
                 resolver.openOutputStream(destUri)?.use { output ->
                     input.copyTo(output, DEFAULT_BUFFER_SIZE)
                     output.flush()
                 } ?: throw IllegalStateException("output-stream-null")
             } ?: throw IllegalStateException("input-stream-null")
-        }.isSuccess
-
+        }
+        val copied = copyResult.isSuccess
         val sizeOk = copied && sourceSize >= 0 && querySize(destUri) == sourceSize
         if (!copied || !sizeOk) {
             runCatching { deleteDoc(treeUri, DocumentsContract.getDocumentId(destUri)) }
-            return@withContext Outcome.Failed(if (copied) "size-mismatch" else "copy-failed")
+            val detail = when {
+                copyResult.exceptionOrNull() is SecurityException -> "permission-denied"
+                copied -> "size-mismatch"
+                else -> "copy-failed"
+            }
+            return@withContext Outcome.Failed(detail)
         }
 
-        // Same-name copy into the same folder would mean the source IS the
-        // destination document; detect via document id equality.
+        // Same-document copy: nothing further to delete.
         val destDocId = DocumentsContract.getDocumentId(destUri)
         if (destDocId == sourceDocId) {
             return@withContext Outcome.Moved(destUri, policy)
         }
 
+        // REPLACE: now that the copy is verified, remove the old destination.
+        var finalUri = destUri
+        if (action == com.sortfold.app.core.model.PlanAction.REPLACE && displayName in existing) {
+            val oldDoc = childDocId(treeUri, destFolderDocId, displayName)
+            if (oldDoc != null && oldDoc != destDocId) {
+                runCatching { deleteDoc(treeUri, oldDoc) }
+            }
+            // The provider may have auto-renamed our copy ("photo (1).jpg")
+            // because the old file still existed; claim the real name back.
+            if (queryDisplayName(finalUri) != displayName) {
+                runCatching {
+                    DocumentsContract.renameDocument(resolver, finalUri, displayName)
+                        ?.let { finalUri = it }
+                }
+            }
+        }
+        val finalName = queryDisplayName(finalUri) ?: policy
+
         val deleted = runCatching { deleteDoc(treeUri, sourceDocId) }.getOrDefault(false)
         if (!deleted) {
             // Source locked: roll back the copy so nothing is duplicated.
-            runCatching { deleteDoc(treeUri, destDocId) }
+            runCatching { deleteDoc(treeUri, DocumentsContract.getDocumentId(finalUri)) }
             return@withContext Outcome.Failed("source-delete-failed")
         }
-        Outcome.Moved(destUri, policy)
+        Outcome.Moved(finalUri, finalName)
     }
 
     private fun childDocId(treeUri: Uri, parentDocId: String, name: String): String? {
@@ -159,6 +183,12 @@ class Mover(private val context: Context) {
             if (c.moveToFirst()) c.getLong(0) else -1L
         } ?: -1L
     }.getOrDefault(-1L)
+
+    private fun queryDisplayName(uri: Uri): String? = runCatching {
+        resolver.query(uri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), android.os.Bundle(), null)?.use { c ->
+            if (c.moveToFirst()) c.getString(0) else null
+        }
+    }.getOrNull()
 
     private fun deleteDoc(treeUri: Uri, docId: String): Boolean {
         val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
@@ -202,5 +232,17 @@ class Mover(private val context: Context) {
         /** Root document of a tree; every destination folder is created below it. */
         fun treeRootDocId(treeUri: Uri): String =
             DocumentsContract.getTreeDocumentId(treeUri)
+
+        /**
+         * Parent document id of a child document id.
+         * "primary:Pics/a.jpg" -> "primary:Pics"; "primary:top.jpg" -> "primary:"
+         * (the storage root itself — a plain substringBeforeLast('/') would return
+         * the file id and undo would try to create a child inside a file).
+         */
+        fun parentDocIdOf(docId: String): String {
+            val slash = docId.lastIndexOf('/')
+            if (slash <= 0) return docId.substringBefore(':') + ":"
+            return docId.substring(0, slash)
+        }
     }
 }

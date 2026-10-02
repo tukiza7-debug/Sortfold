@@ -79,4 +79,14 @@ object ProgressNotifications {
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(context, jobId))
             .build()
+
+    /** "A new version is available" notice — belongs on the UPDATES channel. */
+    fun updateAvailable(context: Context, version: String): Notification =
+        NotificationCompat.Builder(context, CHANNEL_UPDATES)
+            .setSmallIcon(R.drawable.ic_stat_sortfold)
+            .setContentTitle(context.getString(R.string.notif_update_title))
+            .setContentText(context.getString(R.string.notif_update_text, version))
+            .setAutoCancel(true)
+            .setContentIntent(openAppIntent(context, null))
+            .build()
 }

@@ -95,7 +95,7 @@ sealed class UpdateUiState {
     ) : UpdateUiState()
 }
 
-enum class UpdateCheckFailure { OFFLINE, TIMEOUT, NO_RELEASE, RATE_LIMITED, HTTP, MALFORMED, NO_APK }
+enum class UpdateCheckFailure { OFFLINE, TIMEOUT, NO_RELEASE, RATE_LIMITED, HTTP, MALFORMED, NO_APK, UNEXPECTED }
 
 class SettingsViewModel(private val container: AppContainer) : ViewModel() {
 
@@ -130,6 +130,7 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
                         is GithubApiClient.UpdateException.Malformed -> UpdateCheckFailure.MALFORMED
                         is GithubApiClient.UpdateException.NoApkAsset -> UpdateCheckFailure.NO_APK
                         is GithubApiClient.UpdateException.Http -> UpdateCheckFailure.HTTP
+                        is GithubApiClient.UpdateException.Unknown -> UpdateCheckFailure.UNEXPECTED
                     }
                     container.errorRepository.log(
                         module = "updater",
@@ -759,6 +760,7 @@ private fun updateFailureText(reason: UpdateCheckFailure, resetSeconds: Long?): 
     UpdateCheckFailure.HTTP -> stringResource(R.string.update_err_http)
     UpdateCheckFailure.MALFORMED -> stringResource(R.string.update_err_malformed)
     UpdateCheckFailure.NO_APK -> stringResource(R.string.update_err_no_apk)
+    UpdateCheckFailure.UNEXPECTED -> stringResource(R.string.update_err_unexpected)
 }
 
 @Composable

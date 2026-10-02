@@ -17,7 +17,9 @@ class UndoManager(private val context: Context, private val db: SortfoldDatabase
 
     suspend fun undoJob(jobId: Long): UndoResult {
         val job = db.sortJobDao().byId(jobId) ?: return UndoResult(0, 0, false)
-        if (job.status == "UNDOING" || job.status == "UNDONE") return UndoResult(0, 0, false)
+        // UNDONE is final; UNDOING is recoverable — a process death mid-undo used
+        // to leave the job stuck in that state with no way to retry (BUG-11).
+        if (job.status == "UNDONE") return UndoResult(0, 0, false)
         db.sortJobDao().updateProgress(jobId, "UNDOING", job.doneFiles, job.doneBytes, System.currentTimeMillis(), null)
 
         val mover = Mover(context)
@@ -40,7 +42,9 @@ class UndoManager(private val context: Context, private val db: SortfoldDatabase
                 failed++
                 continue
             }
-            val originalParentDocId = row.sourceDocId.substringBeforeLast('/')
+            // Parent of the ORIGINAL location; Mover.parentDocIdOf handles
+            // root-level files ("primary:top.jpg" -> "primary:") correctly.
+            val originalParentDocId = Mover.parentDocIdOf(row.sourceDocId)
             val outcome = runCatching {
                 mover.copyBack(treeUri, docId, originalParentDocId, row.displayName, row.mime)
             }.getOrElse { Mover.Outcome.Failed(it.message ?: "restore-error") }

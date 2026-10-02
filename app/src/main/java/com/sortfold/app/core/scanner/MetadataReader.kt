@@ -29,9 +29,12 @@ object MetadataReader {
         needDates: Boolean,
         onProgress: (Int) -> Unit = {},
     ): List<com.sortfold.app.core.model.MediaFile> = withContext(Dispatchers.IO) {
-        if (!needDimensions && !needDates) return@withContext files
+        if (!needDimensions && !needDates) {
+            onProgress(files.size)
+            return@withContext files
+        }
         var done = 0
-        files.map { file ->
+        val enriched = files.map { file ->
             var out = file
             val uri = childUri(treeUri, file.documentId)
             try {
@@ -51,6 +54,10 @@ object MetadataReader {
             if (done % 32 == 0) onProgress(done)
             out
         }
+        // Always report the final count, otherwise progress sticks at the last
+        // multiple of 32 for file counts that are not a multiple of 32.
+        onProgress(done)
+        enriched
     }
 
     fun dateFromName(name: String): Long? {

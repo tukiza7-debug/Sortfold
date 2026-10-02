@@ -352,4 +352,5 @@
     <string name="update_err_http">GitHub answered with an unexpected error. Details are in the Error Library.</string>
     <string name="update_err_malformed">GitHub sent a response the app could not read.</string>
     <string name="update_err_no_apk">The latest release has no APK file attached yet.</string>
+    <string name="update_err_unexpected">Something unexpected went wrong during the check. Details are in the Error Library.</string>
 </resources>

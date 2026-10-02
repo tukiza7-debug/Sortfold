@@ -77,23 +77,41 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
         private set
     val nameRules = mutableStateListOf<NameRule>()
 
-    init {
-        // Apply the user's saved defaults (settings must change real behaviour).
-        viewModelScope.launch {
-            val s = container.settingsRepository.snapshot()
-            selectedModes = setOf(s.defaultSortMode)
-            policy = s.defaultDuplicatePolicy
-            granularity = s.defaultDateGranularity
-            dateStyleIso = s.namingStyleIso
-            s.defaultDestTreeUri?.let { pendingDefaultTree = it }
-        }
-    }
+    /** True once the saved-defaults init job has run (test seam + guard). */
+    var defaultsApplied by mutableStateOf(false)
+        private set
 
+    /** Any explicit user choice on the Modes step must win over saved defaults. */
+    private var userAdjusted = false
+
+    /**
+     * NOTE: every property the init coroutine touches MUST be declared BEFORE
+     * this init block. With Dispatchers.Main.immediate a warm DataStore read
+     * can complete synchronously DURING construction; touching a delegated
+     * property declared later than the init block would dereference a null
+     * delegate and kill the coroutine (BUG-19).
+     */
     /** Set from DataStore init; consumed by FolderStep to preselect the folder. */
     var pendingDefaultTree by mutableStateOf<String?>(null)
         private set
     var dateStyleIso by mutableStateOf(true)
         private set
+
+    init {
+        // Apply the user's saved defaults — but never stomp on choices the user
+        // already made while the DataStore read was in flight (BUG-17).
+        viewModelScope.launch {
+            val s = container.settingsRepository.snapshot()
+            if (!userAdjusted) {
+                selectedModes = setOf(s.defaultSortMode)
+                policy = s.defaultDuplicatePolicy
+                granularity = s.defaultDateGranularity
+                dateStyleIso = s.namingStyleIso
+            }
+            s.defaultDestTreeUri?.let { pendingDefaultTree = it }
+            defaultsApplied = true
+        }
+    }
 
     fun consumePendingDefaultTree(): String? {
         val v = pendingDefaultTree
@@ -101,22 +119,26 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
         return v
     }
 
-    fun chooseGranularity(g: DateGranularity) {
-        granularity = g
-    }
-
     fun setModes(modes: Set<SortMode>) {
+        userAdjusted = true
         selectedModes = modes
         refreshLivePreview()
     }
 
     fun toggleMode(mode: SortMode, checked: Boolean) {
+        userAdjusted = true
         selectedModes = if (checked) selectedModes + mode else selectedModes - mode
         refreshLivePreview()
     }
 
     fun choosePolicy(p: DuplicatePolicy) {
+        userAdjusted = true
         policy = p
+    }
+
+    fun chooseGranularity(g: DateGranularity) {
+        userAdjusted = true
+        granularity = g
     }
 
     var suggestions by mutableStateOf<List<ModeSuggester.Suggestion>>(emptyList())
@@ -297,16 +319,26 @@ class WizardViewModel(private val container: AppContainer) : ViewModel() {
             }
 
             val now = System.currentTimeMillis()
-            val newJobId = container.database.sortJobDao().insert(
-                SortJobEntity(
-                    treeUri = uri, destTreeUri = uri,
-                    modesCsv = SortMode.ordered(selectedModes).joinToString(",") { it.name },
-                    duplicatePolicy = policy.name,
-                    status = "PLANNED", totalFiles = totals.moveCount,
-                    doneFiles = 0, totalBytes = totals.moveBytes, doneBytes = 0,
-                    createdAt = now, updatedAt = now,
-                ),
-            )
+            val newJobId: Long
+            val existingJobId = jobId
+            if (existingJobId != null) {
+                // Rebuild of an existing plan: reuse the job row instead of
+                // piling up orphan PLANNED jobs in History (BUG-18).
+                newJobId = existingJobId
+                container.database.moveLogDao().deleteForJob(newJobId)
+                container.database.sortJobDao().updatePlan(newJobId, totals.moveCount, totals.moveBytes)
+            } else {
+                newJobId = container.database.sortJobDao().insert(
+                    SortJobEntity(
+                        treeUri = uri, destTreeUri = uri,
+                        modesCsv = SortMode.ordered(selectedModes).joinToString(",") { it.name },
+                        duplicatePolicy = policy.name,
+                        status = "PLANNED", totalFiles = totals.moveCount,
+                        doneFiles = 0, totalBytes = totals.moveBytes, doneBytes = 0,
+                        createdAt = now, updatedAt = now,
+                    ),
+                )
+            }
             container.database.moveLogDao().insertAll(
                 plan.filter { it.action != PlanAction.SKIP_DUPLICATE }.mapIndexed { i, p ->
                     MoveLogEntity(

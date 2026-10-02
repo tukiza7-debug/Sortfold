@@ -24,8 +24,10 @@ object StorageSafety {
     fun classifyTreeId(treeDocumentId: String): TreeRisk {
         val id = treeDocumentId.lowercase()
         val path = id.substringAfter(':', "")
-        if (path.startsWith("android/data") || path.startsWith("android/obb")) return TreeRisk.APP_PRIVATE
-        if (path.startsWith("android/")) return TreeRisk.APP_PRIVATE
+        if (path == "android" || path.startsWith("android/data") ||
+            path.startsWith("android/obb") || path.startsWith("android/")) {
+            return TreeRisk.APP_PRIVATE
+        }
         if (path.startsWith("system") || path.startsWith("proc") || path.startsWith("sys")) return TreeRisk.SYSTEM
         // A system/proc/sys volume itself (e.g. tree id "system:etc").
         if (id.startsWith("system:") || id.startsWith("proc:") || id.startsWith("sys:")) return TreeRisk.SYSTEM

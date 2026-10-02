@@ -27,9 +27,19 @@ class FakeDocumentsProvider : DocumentsProvider() {
         @Volatile
         var failQueriesWithSecurityException: Boolean = false
 
+        /** Test hook: the provider returns a null cursor (provider failure). */
+        @Volatile
+        var failQueriesWithNullCursor: Boolean = false
+
+        /** Test hook: openDocument throws SecurityException (file locked/protected). */
+        @Volatile
+        var failOpensWithSecurityException: Boolean = false
+
         fun reset() {
             root = Files.createTempDirectory("sortfold-fake").toFile()
             failQueriesWithSecurityException = false
+            failQueriesWithNullCursor = false
+            failOpensWithSecurityException = false
         }
 
         fun fileFor(docId: String): File {
@@ -76,9 +86,12 @@ class FakeDocumentsProvider : DocumentsProvider() {
 
     override fun onCreate(): Boolean = true
 
-    /** Mirrors ExternalStorageProvider: tree members are path-prefix descendants. */
+    /** Mirrors ExternalStorageProvider: tree members are path-prefix descendants.
+     *  A storage-root parent ("primary:") is a prefix directly, without a slash. */
     override fun isChildDocument(parentDocumentId: String, documentId: String): Boolean =
-        documentId == parentDocumentId || documentId.startsWith("$parentDocumentId/")
+        documentId == parentDocumentId ||
+            documentId.startsWith("$parentDocumentId/") ||
+            (parentDocumentId.endsWith(":") && documentId.startsWith(parentDocumentId))
 
     override fun queryRoots(projection: Array<out String>?) = MatrixCursor(
         projection ?: arrayOf(DocumentsContract.Root.COLUMN_ROOT_ID, DocumentsContract.Root.COLUMN_DOCUMENT_ID),
@@ -105,7 +118,9 @@ class FakeDocumentsProvider : DocumentsProvider() {
         parentDocumentId: String,
         projection: Array<out String>?,
         sortOrder: String?,
-    ) = MatrixCursor(projection ?: defaultProjection()).apply {
+    ): android.database.Cursor? = if (failQueriesWithNullCursor) {
+        null
+    } else MatrixCursor(projection ?: defaultProjection()).apply {
         if (failQueriesWithSecurityException) throw SecurityException("Permission revoked: $parentDocumentId")
         if (!fileFor(parentDocumentId).exists()) throw java.io.FileNotFoundException(parentDocumentId)
         for (f in childrenOf(parentDocumentId)) {
@@ -120,6 +135,9 @@ class FakeDocumentsProvider : DocumentsProvider() {
     }
 
     override fun openDocument(documentId: String, mode: String, signal: CancellationSignal?): ParcelFileDescriptor {
+        if (failOpensWithSecurityException) {
+            throw SecurityException("Document locked: $documentId")
+        }
         val f = fileFor(documentId)
         val p = ParcelFileDescriptor.MODE_READ_ONLY
         return when {
@@ -146,6 +164,13 @@ class FakeDocumentsProvider : DocumentsProvider() {
 
     override fun deleteDocument(documentId: String) {
         fileFor(documentId).deleteRecursively()
+    }
+
+    override fun renameDocument(documentId: String, displayName: String): String {
+        val f = fileFor(documentId)
+        val target = File(f.parentFile, displayName)
+        if (!f.renameTo(target)) throw java.lang.IllegalStateException("rename failed: $documentId -> $displayName")
+        return docIdFor(target)
     }
 
     override fun getDocumentType(documentId: String): String {

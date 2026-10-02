@@ -2,21 +2,25 @@ package com.sortfold.app.data.prefs
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.sortfold.app.core.model.DateGranularity
 import com.sortfold.app.core.model.DuplicatePolicy
 import com.sortfold.app.core.model.SortMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sortfold_settings")
+import java.io.File
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
@@ -44,7 +48,39 @@ data class AppSettings(
     val lastUpdateCheckAt: Long = 0,
 )
 
+/**
+ * Settings store. The DataStore is created with a corruption handler: a
+ * truncated/garbage preferences file used to crash every settings read (and
+ * with it the whole app); now it falls back to defaults.
+ */
 class SettingsRepository(private val context: Context) {
+
+    private val dataStore: DataStore<Preferences> = dataStoreFor(context)
+
+    companion object {
+        /**
+         * One DataStore instance per file, process-wide: DataStore refuses
+         * multiple active instances on the same file, and tests (plus the real
+         * Application + any early accessor) can construct several repositories
+         * before the first one is collected.
+         */
+        @Volatile
+        private var cached: Pair<File, DataStore<Preferences>>? = null
+
+        private fun dataStoreFor(context: Context): DataStore<Preferences> {
+            val file = File(context.filesDir, "datastore/sortfold_settings.preferences_pb")
+            synchronized(this) {
+                cached?.let { (f, ds) -> if (f == file) return ds }
+                val ds = PreferenceDataStoreFactory.create(
+                    corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+                    scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+                    produceFile = { file },
+                )
+                cached = file to ds
+                return ds
+            }
+        }
+    }
 
     private object Keys {
         val THEME = stringPreferencesKey("theme_mode")
@@ -70,7 +106,7 @@ class SettingsRepository(private val context: Context) {
         val LAST_UPDATE_CHECK = longPreferencesKey("last_update_check_at")
     }
 
-    val settings: Flow<AppSettings> = context.dataStore.data.map { p -> toSettings(p) }
+    val settings: Flow<AppSettings> = dataStore.data.map { p -> toSettings(p) }
 
     fun toSettings(p: Preferences): AppSettings = AppSettings(
         themeMode = p[Keys.THEME]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.SYSTEM,
@@ -123,6 +159,6 @@ class SettingsRepository(private val context: Context) {
     suspend fun setLastUpdateCheckAt(v: Long) = edit { it[Keys.LAST_UPDATE_CHECK] = v }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
-        context.dataStore.edit(block)
+        dataStore.edit(block)
     }
 }

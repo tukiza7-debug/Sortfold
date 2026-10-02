@@ -41,7 +41,15 @@ class MediaScanner(private val context: Context) {
         } catch (e: IllegalArgumentException) {
             throw ScanFailedException(ScanFailedException.Reason.PROVIDER_ERROR, e)
         }
-        cursor?.use { c ->
+        // A null cursor means the provider rejected the query; pretending the
+        // folder was empty would silently mislead the user.
+        if (cursor == null) {
+            throw ScanFailedException(
+                ScanFailedException.Reason.PROVIDER_ERROR,
+                IllegalStateException("provider returned null cursor for $childrenUri"),
+            )
+        }
+        cursor.use { c ->
             val idCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
             val nameCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
             val mimeCol = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
