@@ -49,6 +49,27 @@ class UiBugsTest {
         context.resources.getIdentifier(name, "string", context.packageName)
 
     // ------------------------------------------------------------------
+    // BUG-28: compose.waitUntil() advances the Compose clock but never runs
+    // work parked on Robolectric's PAUSED main looper — Room flow resumptions
+    // and InvalidationTracker notifications land there, so on a CI runner the
+    // emission can stay parked forever while the poll spins (CI runs #6 and
+    // #7 failed on exactly this). Poll the way SystemBugsTest.awaitUntil
+    // does: idle the main looper every iteration, then check the semantics
+    // tree. (Locally un-reproducible across JDK 17/21 — the stall is a CI
+    // scheduling property, not a timeout.)
+    // ------------------------------------------------------------------
+    private fun awaitNode(text: String) {
+        val looper = Shadows.shadowOf(android.os.Looper.getMainLooper())
+        repeat(600) {
+            looper.idle()
+            if (compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()) return
+            looper.idle() // run tasks the previous idle may have scheduled
+            Thread.sleep(10)
+        }
+        throw AssertionError("node with text \"$text\" never appeared")
+    }
+
+    // ------------------------------------------------------------------
     // BUG-20: the Apply step announced "progress 3 of 10" in hardcoded
     // English regardless of the app language.
     // ------------------------------------------------------------------
@@ -70,12 +91,9 @@ class UiBugsTest {
 
     // ------------------------------------------------------------------
     // BUG-22: the job result screen flashed "Job not found" for the first
-    // frames while the job was still loading.
-    // BUG-28: waitForIdle() only synchronizes the composition, not the Room
-    // flow feeding JobUi.Loading -> NotFound (JobResultScreen starts at
-    // Loading via collectAsStateWithLifecycle). On a slower CI runner the
-    // query lands after waitForIdle() returns, so the assertion raced the
-    // database. Poll with waitUntil() for every async-settling state.
+    // frames while the job was still loading. The screen starts at
+    // JobUi.Loading (collectAsStateWithLifecycle) and settles only after
+    // the Room flow emits — see awaitNode for why that needs looper idling.
     // ------------------------------------------------------------------
     @Test
     fun `BUG-22 job result shows a loading state before reporting not-found`() {
@@ -93,10 +111,7 @@ class UiBugsTest {
                 )
             }
         }
-        compose.waitUntil(10_000L) {
-            compose.onAllNodesWithText(context.getString(R.string.job_not_found))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        awaitNode(context.getString(R.string.job_not_found))
         compose.onNodeWithText(context.getString(R.string.job_not_found)).assertExists()
     }
 
@@ -120,10 +135,7 @@ class UiBugsTest {
             }
         }
         // BUG-28: wait for the async Room read to land (Loading -> content).
-        compose.waitUntil(10_000L) {
-            compose.onAllNodesWithText(context.getString(R.string.result_details))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        awaitNode(context.getString(R.string.result_details))
         compose.onNodeWithText(context.getString(R.string.job_not_found)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.result_details)).assertExists()
         Unit
@@ -174,15 +186,9 @@ class UiBugsTest {
         }
         // BUG-28: the Undo button appears only after the async Room read;
         // wait for it before clicking, then wait for the undo result itself.
-        compose.waitUntil(10_000L) {
-            compose.onAllNodesWithText(context.getString(R.string.action_undo))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        awaitNode(context.getString(R.string.action_undo))
         compose.onNodeWithText(context.getString(R.string.action_undo)).performClick()
-        compose.waitUntil(10_000L) {
-            compose.onAllNodesWithText(context.getString(R.string.result_undo_summary, 1, 0))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        awaitNode(context.getString(R.string.result_undo_summary, 1, 0))
         // The outcome must be visible: restored 1, failed 0.
         compose.onNodeWithText(context.getString(R.string.result_undo_summary, 1, 0)).assertExists()
         assertTrue(java.io.File(FakeDocumentsProvider.root, "Pics/IMG_1.jpg").exists())
