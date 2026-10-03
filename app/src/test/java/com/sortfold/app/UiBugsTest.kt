@@ -1,6 +1,7 @@
 package com.sortfold.app
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.activity.ComponentActivity
@@ -70,6 +71,11 @@ class UiBugsTest {
     // ------------------------------------------------------------------
     // BUG-22: the job result screen flashed "Job not found" for the first
     // frames while the job was still loading.
+    // BUG-28: waitForIdle() only synchronizes the composition, not the Room
+    // flow feeding JobUi.Loading -> NotFound (JobResultScreen starts at
+    // Loading via collectAsStateWithLifecycle). On a slower CI runner the
+    // query lands after waitForIdle() returns, so the assertion raced the
+    // database. Poll with waitUntil() for every async-settling state.
     // ------------------------------------------------------------------
     @Test
     fun `BUG-22 job result shows a loading state before reporting not-found`() {
@@ -87,7 +93,10 @@ class UiBugsTest {
                 )
             }
         }
-        compose.waitForIdle()
+        compose.waitUntil(10_000L) {
+            compose.onAllNodesWithText(context.getString(R.string.job_not_found))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         compose.onNodeWithText(context.getString(R.string.job_not_found)).assertExists()
     }
 
@@ -110,7 +119,11 @@ class UiBugsTest {
                 JobResultScreen(container = AppContainer(context), jobId = jobId, onDone = {})
             }
         }
-        compose.waitForIdle()
+        // BUG-28: wait for the async Room read to land (Loading -> content).
+        compose.waitUntil(10_000L) {
+            compose.onAllNodesWithText(context.getString(R.string.result_details))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         compose.onNodeWithText(context.getString(R.string.job_not_found)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.result_details)).assertExists()
         Unit
@@ -159,9 +172,17 @@ class UiBugsTest {
                 )
             }
         }
-        compose.waitForIdle()
+        // BUG-28: the Undo button appears only after the async Room read;
+        // wait for it before clicking, then wait for the undo result itself.
+        compose.waitUntil(10_000L) {
+            compose.onAllNodesWithText(context.getString(R.string.action_undo))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         compose.onNodeWithText(context.getString(R.string.action_undo)).performClick()
-        compose.waitForIdle()
+        compose.waitUntil(10_000L) {
+            compose.onAllNodesWithText(context.getString(R.string.result_undo_summary, 1, 0))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         // The outcome must be visible: restored 1, failed 0.
         compose.onNodeWithText(context.getString(R.string.result_undo_summary, 1, 0)).assertExists()
         assertTrue(java.io.File(FakeDocumentsProvider.root, "Pics/IMG_1.jpg").exists())
