@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sortfold.app.AppContainer
+import com.sortfold.app.core.history.UndoManager
 import com.sortfold.app.data.db.MoveLogEntity
 import com.sortfold.app.R
 import com.sortfold.app.data.db.SortJobEntity
@@ -46,6 +47,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import com.sortfold.app.ui.theme.LocalReducedMotion
 import com.sortfold.app.ui.theme.Motion
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import androidx.compose.animation.core.Spring
@@ -56,17 +58,34 @@ private sealed interface JobUi {
     data class Ready(val job: SortJobEntity?) : JobUi
 }
 
-/** Result screen opened from the completion notification or history. */
+/**
+ * Result screen opened from the completion notification or history.
+ *
+ * Test seams (BUG-28): both extra parameters default to null in production.
+ * `jobFlow` replaces the live Room observation and `runUndo` replaces the
+ * WorkScheduler undo trigger, letting compose tests drive the screen without
+ * crossing Room's executor threads, WorkManager's dispatcher or the
+ * virtual-time test scheduler — the multi-clock race that made those tests
+ * fail nondeterministically on CI (runs #6/#7/#8). Production callers pass
+ * nothing and get exactly the previous behavior.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JobResultScreen(container: AppContainer, jobId: Long, onDone: () -> Unit) {
+fun JobResultScreen(
+    container: AppContainer,
+    jobId: Long,
+    onDone: () -> Unit,
+    jobFlow: Flow<SortJobEntity?>? = null,
+    runUndo: ((onResult: (UndoManager.UndoResult) -> Unit) -> Unit)? = null,
+) {
     val context = LocalContext.current
 
     // BUG-22: the raw flow's first emission used to be indistinguishable from
     // "no such job", flashing the not-found state on every open. A distinct
     // Loading state fixes it.
-    val ui by remember(jobId) {
-        container.database.sortJobDao().observeById(jobId).map { JobUi.Ready(it) as JobUi }
+    val ui by remember(jobId, jobFlow) {
+        (jobFlow ?: container.database.sortJobDao().observeById(jobId))
+            .map { JobUi.Ready(it) as JobUi }
     }.collectAsStateWithLifecycle(initialValue = JobUi.Loading)
 
     // BUG-23: undo previously fired with no user feedback at all.
@@ -162,10 +181,12 @@ fun JobResultScreen(container: AppContainer, jobId: Long, onDone: () -> Unit) {
                             OutlinedButton(
                                 onClick = {
                                     undoBusy = true
-                                    com.sortfold.app.work.WorkScheduler.undoLast(context, jobId) { result ->
+                                    val deliver: (UndoManager.UndoResult) -> Unit = { result ->
                                         undoBusy = false
                                         undoResult = result.restored to result.failed
                                     }
+                                    runUndo?.invoke(deliver)
+                                        ?: com.sortfold.app.work.WorkScheduler.undoLast(context, jobId, deliver)
                                 },
                                 enabled = !undoBusy,
                                 modifier = Modifier.fillMaxWidth(),

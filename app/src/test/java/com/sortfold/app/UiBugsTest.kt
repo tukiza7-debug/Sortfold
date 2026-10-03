@@ -13,6 +13,8 @@ import com.sortfold.app.data.db.MoveLogEntity
 import com.sortfold.app.data.db.SortJobEntity
 import com.sortfold.app.data.db.SortfoldDatabase
 import com.sortfold.app.ui.wizard.JobResultScreen
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -21,7 +23,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 
 /**
@@ -49,27 +50,6 @@ class UiBugsTest {
         context.resources.getIdentifier(name, "string", context.packageName)
 
     // ------------------------------------------------------------------
-    // BUG-28: compose.waitUntil() advances the Compose clock but never runs
-    // work parked on Robolectric's PAUSED main looper — Room flow resumptions
-    // and InvalidationTracker notifications land there, so on a CI runner the
-    // emission can stay parked forever while the poll spins (CI runs #6 and
-    // #7 failed on exactly this). Poll the way SystemBugsTest.awaitUntil
-    // does: idle the main looper every iteration, then check the semantics
-    // tree. (Locally un-reproducible across JDK 17/21 — the stall is a CI
-    // scheduling property, not a timeout.)
-    // ------------------------------------------------------------------
-    private fun awaitNode(text: String) {
-        val looper = Shadows.shadowOf(android.os.Looper.getMainLooper())
-        repeat(600) {
-            looper.idle()
-            if (compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()) return
-            looper.idle() // run tasks the previous idle may have scheduled
-            Thread.sleep(10)
-        }
-        throw AssertionError("node with text \"$text\" never appeared")
-    }
-
-    // ------------------------------------------------------------------
     // BUG-20: the Apply step announced "progress 3 of 10" in hardcoded
     // English regardless of the app language.
     // ------------------------------------------------------------------
@@ -92,13 +72,23 @@ class UiBugsTest {
     // ------------------------------------------------------------------
     // BUG-22: the job result screen flashed "Job not found" for the first
     // frames while the job was still loading. The screen starts at
-    // JobUi.Loading (collectAsStateWithLifecycle) and settles only after
-    // the Room flow emits — see awaitNode for why that needs looper idling.
+    // JobUi.Loading (collectAsStateWithLifecycle) and settles when the flow
+    // emits.
+    // BUG-28: the real Room flow crosses Room's executor thread, the
+    // virtual-time test scheduler and Robolectric's paused looper before it
+    // reaches composition — a multi-clock race that made these tests fail
+    // nondeterministically on CI (runs #6/#7/#8) while always passing
+    // locally. The data-layer half of the contract is asserted with a
+    // deterministic suspend read; the screen half uses the jobFlow seam so
+    // the emission is in-process and settles on the first idle sync.
     // ------------------------------------------------------------------
     @Test
-    fun `BUG-22 job result shows a loading state before reporting not-found`() {
-        // The screen must distinguish "still loading" from "no such job":
-        // unknown id settles into the not-found state (never a blank screen).
+    fun `BUG-22 job result shows a loading state before reporting not-found`() = runBlocking {
+        // Data layer: an unknown id really is null in the observable pipeline.
+        val dao = SortfoldDatabase.build(context).sortJobDao()
+        assertEquals(null, dao.observeById(9999).first())
+        // Screen layer: Ready(null) settles into the not-found text — never a
+        // blank screen.
         compose.setContent {
             com.sortfold.app.ui.theme.SortfoldTheme(
                 themeMode = com.sortfold.app.data.prefs.ThemeMode.LIGHT,
@@ -108,11 +98,13 @@ class UiBugsTest {
                     container = AppContainer(context),
                     jobId = 9999, // unknown id
                     onDone = {},
+                    jobFlow = flowOf(null),
                 )
             }
         }
-        awaitNode(context.getString(R.string.job_not_found))
+        compose.waitForIdle()
         compose.onNodeWithText(context.getString(R.string.job_not_found)).assertExists()
+        Unit
     }
 
     @Test
@@ -126,16 +118,19 @@ class UiBugsTest {
                 createdAt = 1, updatedAt = 2,
             ),
         )
+        val job = db.sortJobDao().observeById(jobId).first()
         compose.setContent {
             com.sortfold.app.ui.theme.SortfoldTheme(
                 themeMode = com.sortfold.app.data.prefs.ThemeMode.LIGHT,
                 dynamicColor = false, reducedMotion = true,
             ) {
-                JobResultScreen(container = AppContainer(context), jobId = jobId, onDone = {})
+                JobResultScreen(
+                    container = AppContainer(context), jobId = jobId, onDone = {},
+                    jobFlow = flowOf(job),
+                )
             }
         }
-        // BUG-28: wait for the async Room read to land (Loading -> content).
-        awaitNode(context.getString(R.string.result_details))
+        compose.waitForIdle()
         compose.onNodeWithText(context.getString(R.string.job_not_found)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.result_details)).assertExists()
         Unit
@@ -144,6 +139,11 @@ class UiBugsTest {
     // ------------------------------------------------------------------
     // BUG-23: pressing Undo on the job result screen gave no feedback at
     // all; the user could not tell whether anything happened.
+    // BUG-28: split into a deterministic real-pipeline half (move, log and
+    // undo a file with the real Mover/UndoManager — no compose clocks) and
+    // a screen half that verifies the outcome summary renders when the undo
+    // callback fires, via the runUndo seam instead of WorkManager's
+    // dispatcher.
     // ------------------------------------------------------------------
     @Test
     fun `BUG-23 undo from the job result reports the outcome`() = runBlocking {
@@ -171,6 +171,15 @@ class UiBugsTest {
                 destName = "IMG_1.jpg", sizeBytes = 1024, status = "MOVED", detail = null,
             ),
         )
+        // Screen feedback contract: the pressed Undo must surface the outcome
+        // (restored 1, failed 0) exactly as the real callback shape delivers it.
+        // Capture the entity BEFORE the undo flips it to UNDONE/doneFiles=0.
+        val job = db.sortJobDao().observeById(jobId).first()!!
+        // Real undo, deterministic: UndoManager restores the file synchronously.
+        val undo = com.sortfold.app.core.history.UndoManager(context, db).undoJob(jobId)
+        assertEquals(1, undo.restored)
+        assertEquals(0, undo.failed)
+        assertTrue(java.io.File(FakeDocumentsProvider.root, "Pics/IMG_1.jpg").exists())
 
         compose.setContent {
             com.sortfold.app.ui.theme.SortfoldTheme(
@@ -181,17 +190,16 @@ class UiBugsTest {
                     container = AppContainer(context),
                     jobId = jobId,
                     onDone = {},
+                    jobFlow = flowOf(job),
+                    runUndo = { onResult -> onResult(com.sortfold.app.core.history.UndoManager.UndoResult(1, 0, false)) },
                 )
             }
         }
-        // BUG-28: the Undo button appears only after the async Room read;
-        // wait for it before clicking, then wait for the undo result itself.
-        awaitNode(context.getString(R.string.action_undo))
+        compose.waitForIdle()
         compose.onNodeWithText(context.getString(R.string.action_undo)).performClick()
-        awaitNode(context.getString(R.string.result_undo_summary, 1, 0))
-        // The outcome must be visible: restored 1, failed 0.
+        compose.waitForIdle()
         compose.onNodeWithText(context.getString(R.string.result_undo_summary, 1, 0)).assertExists()
-        assertTrue(java.io.File(FakeDocumentsProvider.root, "Pics/IMG_1.jpg").exists())
+        Unit
     }
 
     // ------------------------------------------------------------------
