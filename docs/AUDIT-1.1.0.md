@@ -467,8 +467,36 @@ split or recycled from the 1.0.0/1.0.1 audits to reach a quota.
 | BUG-25 | minor | release.yml:72 | release notes built on depth-1 clone | code inspection (CI-only; not unit-testable) | `fetch-depth: 0` | workflow validated locally |
 | BUG-26 | major | release.yml:54 / build.gradle.kts:92 | AGP 8.13 forbids AAB + split APKs in one invocation → release fails after upgrade | local reproduction (preBundle failure) | `-PbundleOnly` split invocation | bundle + 4 APKs green |
 | BUG-27 | minor | FakeDocumentsProvider.kt:91 | fake rejected storage-root children (`primary:` prefix) → root-tree flows untestable | `CoreBugsTest.BUG-01` red run | `isChildDocument` mirrors real provider + `renameDocument` | green |
+| BUG-28 | minor | UiBugsTest.kt (test-only) | JobResultScreen UI tests raced four async clocks (Room executors, WorkManager dispatch, Robolectric paused looper, compose virtual-time scheduler) → nondeterministic CI failures (runs #6/#7/#8, always green locally) | CI run #6 red (BUG-22 instant assert), run #7 red (waitUntil timeout), run #8 red (both variants) | null-default test seams on `JobResultScreen` (`jobFlow`, `runUndo`); each contract split into a deterministic real-pipeline half (suspend reads, real Mover+UndoManager) and an in-process screen half; production behavior unchanged | green (CI run #9) |
 
-Severity totals: **4 critical · 10 major · 13 minor = 27**.
+Severity totals: **4 critical · 10 major · 13 minor = 27** (plus BUG-28, a
+post-release test-infrastructure stabilization — see the addendum below).
+
+## Addendum — BUG-28 (post-release CI stabilization)
+
+v1.1.0 was tagged and released from `f8d458b` (release run #4, all artifacts
+published). Three subsequent CI runs on `main` exposed a test-infrastructure
+defect that local runs (JDK 17 and 21, isolated and full suites, both
+variants) could never reproduce:
+
+- Run #6: `BUG-22` — instant `assertExists()` raced the async Room read.
+- Run #7: `BUG-23` — `waitUntil(10s)` timed out; compose's poll advances the
+  Compose clock but not the other dispatchers involved.
+- Run #8: `BUG-22` — Robolectric looper idling failed deterministically in
+  both variants; the downloaded test report showed the root environment:
+  compose ui-test runs inside kotlinx-coroutines-test's `runTest` (virtual
+  time), Room emits on real executor threads, Robolectric's main looper is
+  paused, and WorkManager delivers on its own dispatcher. Four clocks — no
+  polling strategy can be deterministic across all of them.
+
+Fix (`5f6906b`): `JobResultScreen` gained two null-default test seams
+(`jobFlow`, `runUndo`); production callers pass nothing and get identical
+behavior. Each test contract is now split into a deterministic real-pipeline
+half (suspend reads against the real DAO; real `Mover` move + real
+`UndoManager.undoJob` verifying restored=1/failed=0 and the file back in
+place) and an in-process screen half that settles on the first idle sync.
+Verified: 94/94 both variants locally on JDK 17 and 21, lint 0 errors, and
+CI run #9 green on the real runner.
 
 ## Still unverified (requires physical hardware)
 
