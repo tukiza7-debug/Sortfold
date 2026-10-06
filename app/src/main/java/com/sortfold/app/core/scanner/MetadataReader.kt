@@ -19,7 +19,32 @@ import java.util.regex.Pattern
  */
 object MetadataReader {
 
-    private val NAME_DATE: Pattern = Pattern.compile("(20\\d{2})[-_.]?(\\d{2})[-_.]?(\\d{2})")
+    /**
+     * Camera/app capture dates embedded at the START of a file name
+     * ("IMG_20230501_123456.jpg", "Screenshot_20230501-123456.jpg",
+     * "2023-05-01 report.jpg"). B-15: arbitrary digit runs anywhere in the
+     * name no longer match, and impossible calendar dates (Feb 31) are
+     * rejected instead of being silently rolled over by Calendar.
+     */
+    private val NAME_DATE: Pattern = Pattern.compile(
+        "^(?:(?:IMG|VID|MVIMG|PXL|Screenshot|SIGNAL|signal|received|Telegram|telegram|video|Video|photo)[_ -]*)?" +
+            "(20\\d{2})[-_. ]?(\\d{2})[-_. ]?(\\d{2})(?:[-_. ].*)?$",
+    )
+
+    fun dateFromName(name: String): Long? {
+        val m = NAME_DATE.matcher(name)
+        if (!m.find()) return null
+        val year = m.group(1)!!.toInt()
+        val month = m.group(2)!!.toInt()
+        val day = m.group(3)!!.toInt()
+        // Valid calendar date only — Calendar used to roll Feb 31 into Mar 3.
+        val date = try {
+            java.time.LocalDate.of(year, month, day)
+        } catch (_: java.time.DateTimeException) {
+            return null
+        }
+        return date.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()
+    }
 
     suspend fun enrich(
         resolver: ContentResolver,
@@ -43,8 +68,9 @@ object MetadataReader {
                     if (dim != null) out = out.copy(width = dim.first, height = dim.second)
                 }
                 if (needDates && file.dateTakenMillis == null) {
-                    val fromName = dateFromName(file.displayName)
-                    val real = fromName ?: dateTaken(resolver, uri, file.mime)
+                    // B-15: real metadata (EXIF / video container) wins; a name
+                    // date is only a fallback for well-known capture names.
+                    val real = dateTaken(resolver, uri, file.mime) ?: dateFromName(file.displayName)
                     if (real != null) out = out.copy(dateTakenMillis = real)
                 }
             } catch (_: Exception) {
@@ -58,20 +84,6 @@ object MetadataReader {
         // multiple of 32 for file counts that are not a multiple of 32.
         onProgress(done)
         enriched
-    }
-
-    fun dateFromName(name: String): Long? {
-        val m = NAME_DATE.matcher(name)
-        if (!m.find()) return null
-        val year = m.group(1)!!.toInt()
-        val month = m.group(2)!!.toInt()
-        val day = m.group(3)!!.toInt()
-        if (month !in 1..12 || day !in 1..31) return null
-        val cal = java.util.Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-            clear()
-            set(year, month - 1, day, 12, 0, 0)
-        }
-        return cal.timeInMillis
     }
 
     private fun dimensions(resolver: ContentResolver, uri: Uri, mime: String?): Pair<Int, Int>? =

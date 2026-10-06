@@ -45,14 +45,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sortfold.app.AppContainer
 import com.sortfold.app.R
+import com.sortfold.app.core.model.CapacityOrder
 import com.sortfold.app.core.model.DateGranularity
 import com.sortfold.app.core.model.DuplicatePolicy
 import com.sortfold.app.core.model.SortMode
 import com.sortfold.app.data.db.AutoRuleEntity
+import com.sortfold.app.ui.common.CapacityPanel
 import com.sortfold.app.ui.common.EmptyState
 import com.sortfold.app.ui.common.Formatters
 import com.sortfold.app.ui.common.SectionHeader
+import com.sortfold.app.ui.common.capacityErrorRes
+import com.sortfold.app.ui.common.parseCustomCapacity
+import com.sortfold.app.ui.common.unitBytes
 import com.sortfold.app.ui.home.simpleFactory
+import com.sortfold.app.ui.theme.Spacing
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
@@ -71,7 +77,20 @@ fun AutoRulesScreen(container: AppContainer, onBack: () -> Unit) {
     var newModeIndex by rememberSaveable { mutableStateOf(0) }
     var newGranularityIndex by rememberSaveable { mutableStateOf(1) }
     var newPolicyIndex by rememberSaveable { mutableStateOf(0) }
-    val newModes = listOf(SortMode.FILE_TYPE, SortMode.DATE_TAKEN, SortMode.EXTENSION, SortMode.SOURCE_APP)
+    // 1.2.0 capacity state for the rule being added.
+    var newCapacityIndex by rememberSaveable { mutableStateOf(-1) }
+    var newCapacityBytes by rememberSaveable { mutableStateOf<Long?>(null) }
+    var newCapacityOrderIndex by rememberSaveable { mutableStateOf(0) }
+    var newCapacityPrefix by rememberSaveable { mutableStateOf("Part") }
+    var newCapacityCustomText by rememberSaveable { mutableStateOf("") }
+    var newCapacityUnit by rememberSaveable { mutableStateOf("GB") }
+    var newCapacityError by rememberSaveable { mutableStateOf<String?>(null) }
+    val newModes = listOf(SortMode.FILE_TYPE, SortMode.DATE_TAKEN, SortMode.EXTENSION, SortMode.SOURCE_APP, SortMode.CAPACITY)
+    val settings by container.settingsRepository.settings.collectAsStateWithLifecycle(
+        initialValue = com.sortfold.app.data.prefs.AppSettings(),
+    )
+    val unitDecimal = settings.capacityUnitDecimal
+    val gbBytes = unitBytes("GB", unitDecimal)
 
     val pickFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) {
@@ -169,8 +188,49 @@ fun AutoRulesScreen(container: AppContainer, onBack: () -> Unit) {
                                 }
                             }
                         }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = {
+                        // 1.2.0: rules can also split by capacity.
+                        if (newModes[newModeIndex] == SortMode.CAPACITY) {
+                            CapacityPanel(
+                                visible = true,
+                                presetIndex = newCapacityIndex,
+                                customText = newCapacityCustomText,
+                                order = if (newCapacityOrderIndex == 0) CapacityOrder.SEQUENTIAL else CapacityOrder.BEST_FIT,
+                                prefix = newCapacityPrefix,
+                                unit = newCapacityUnit,
+                                unitDecimal = unitDecimal,
+                                error = newCapacityError,
+                                estimate = null, // no scan here; the daily run computes reality
+                                onPreset = { bytes, index ->
+                                    newCapacityIndex = index
+                                    if (index == 4) {
+                                        newCapacityBytes = parseCustomCapacity(newCapacityCustomText, newCapacityUnit, unitDecimal)
+                                    } else {
+                                        newCapacityCustomText = ""
+                                        newCapacityError = null
+                                        newCapacityBytes = bytes
+                                    }
+                                },
+                                onCustomText = { text ->
+                                    newCapacityCustomText = text
+                                    val parsed = parseCustomCapacity(text, newCapacityUnit, unitDecimal)
+                                    newCapacityError = if (parsed == null) capacityErrorRes(text, newCapacityUnit, unitDecimal)?.let { context.getString(it) } else null
+                                    newCapacityBytes = parsed
+                                    newCapacityIndex = 4
+                                },
+                                onOrder = { order -> newCapacityOrderIndex = if (order == CapacityOrder.SEQUENTIAL) 0 else 1 },
+                                onPrefix = { newCapacityPrefix = it.trim().ifEmpty { "Part" } },
+                                onUnit = { u ->
+                                    newCapacityUnit = u
+                                    val parsed = parseCustomCapacity(newCapacityCustomText, u, unitDecimal)
+                                    newCapacityError = if (parsed == null) capacityErrorRes(newCapacityCustomText, u, unitDecimal)?.let { context.getString(it) } else null
+                                    newCapacityBytes = parsed
+                                },
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                            Button(
+                                enabled = !(newModes[newModeIndex] == SortMode.CAPACITY && newCapacityBytes == null),
+                                onClick = {
                                 container.appScope.launch {
                                     container.database.autoRuleDao().insert(
                                         AutoRuleEntity(
@@ -180,11 +240,19 @@ fun AutoRulesScreen(container: AppContainer, onBack: () -> Unit) {
                                             dateGranularity = (if (newGranularityIndex == 0) DateGranularity.YEAR else DateGranularity.MONTH).name,
                                             duplicatePolicy = DuplicatePolicy.entries[newPolicyIndex].name,
                                             enabled = true,
+                                            capacityBytes = if (newModes[newModeIndex] == SortMode.CAPACITY) newCapacityBytes else null,
+                                            capacityOrder = if (newCapacityOrderIndex == 0) CapacityOrder.SEQUENTIAL.name else CapacityOrder.BEST_FIT.name,
+                                            capacityPrefix = newCapacityPrefix,
                                         ),
                                     )
                                 }
                                 adding = false
                                 newTreeUri = null
+                                // Reset the capacity fields for the next rule.
+                                newCapacityIndex = -1
+                                newCapacityBytes = null
+                                newCapacityCustomText = ""
+                                newCapacityError = null
                             }) { Text(stringResource(R.string.action_save)) }
                             TextButton(onClick = {
                                 adding = false
@@ -229,6 +297,7 @@ private fun modeLabelShort(mode: SortMode): String = stringResource(
         SortMode.DATE_TAKEN -> R.string.short_mode_date
         SortMode.EXTENSION -> R.string.short_mode_ext
         SortMode.SOURCE_APP -> R.string.short_mode_source
+        SortMode.CAPACITY -> R.string.short_mode_capacity
         else -> R.string.mode_file_type
     },
 )

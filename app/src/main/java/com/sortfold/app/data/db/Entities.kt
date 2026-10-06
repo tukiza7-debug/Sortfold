@@ -1,6 +1,7 @@
 package com.sortfold.app.data.db
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /** One sorting operation (a run of the wizard or an auto-sort rule). */
@@ -20,10 +21,19 @@ data class SortJobEntity(
     val updatedAt: Long,
     val isAuto: Boolean = false,
     val message: String? = null,
+    /** 1.2.0: folder cap used for this job (null = no capacity split). */
+    val capacityBytes: Long? = null,
 )
 
-/** Per-file move log; the undo stack and the job history live here. */
-@Entity(tableName = "move_logs")
+/**
+ * Per-file move log; the undo stack and the job history live here.
+ * v3: (jobId, status) index — the worker used to load every PLANNED row of a
+ * job with full scans (B-17).
+ */
+@Entity(
+    tableName = "move_logs",
+    indices = [Index(value = ["jobId", "status"])],
+)
 data class MoveLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val jobId: Long,
@@ -35,7 +45,7 @@ data class MoveLogEntity(
     val destDocId: String?,      // null until moved
     val destName: String,
     val sizeBytes: Long,
-    val status: String,          // PLANNED, MOVED, SKIPPED, FAILED, UNDONE
+    val status: String,          // PLANNED, IN_FLIGHT, MOVED, SKIPPED, FAILED, UNDONE
     val detail: String? = null,  // failure reason or "renamed:orig"
 )
 
@@ -68,4 +78,8 @@ data class AutoRuleEntity(
     val duplicatePolicy: String,
     val enabled: Boolean,
     val lastRunAt: Long? = null,
+    /** 1.2.0: capacity split for the rule (null = off). */
+    val capacityBytes: Long? = null,
+    val capacityOrder: String = "SEQUENTIAL",
+    val capacityPrefix: String = "Part",
 )

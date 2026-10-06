@@ -8,8 +8,12 @@ import com.sortfold.app.data.db.MoveLogEntity
 import com.sortfold.app.data.db.SortfoldDatabase
 
 /**
- * One-tap undo of a sort operation. Walks the move log backwards and copies
- * every moved file back to its original folder, then removes the sorted copy.
+ * One-tap undo of a sort operation. Walks the move log backwards and restores
+ * every moved file to its original folder, then removes the sorted copy.
+ *
+ * 1.2.0 (B-10): copyBack verifies sizes, resolves collisions explicitly and
+ * removes the sorted copy plus any emptied folders itself, so this manager
+ * only records outcomes.
  */
 class UndoManager(private val context: Context, private val db: SortfoldDatabase) {
 
@@ -29,6 +33,9 @@ class UndoManager(private val context: Context, private val db: SortfoldDatabase
         var failed = 0
         var stopped = false
 
+        // B-06-style cache: the original folder's names, loaded once per folder.
+        val nameCache = HashMap<String, MutableSet<String>>()
+
         for (row in moved.sortedByDescending { it.seq }) {
             val destUriString = row.destDocId
             if (destUriString == null) {
@@ -45,23 +52,21 @@ class UndoManager(private val context: Context, private val db: SortfoldDatabase
             // Parent of the ORIGINAL location; Mover.parentDocIdOf handles
             // root-level files ("primary:top.jpg" -> "primary:") correctly.
             val originalParentDocId = Mover.parentDocIdOf(row.sourceDocId)
-            val outcome = runCatching {
-                mover.copyBack(treeUri, docId, originalParentDocId, row.displayName, row.mime)
-            }.getOrElse { Mover.Outcome.Failed(it.message ?: "restore-error") }
+            val names = nameCache.getOrPut(originalParentDocId) {
+                runCatching { mover.listNames(treeUri, originalParentDocId) }.getOrElse { emptySet() }.toMutableSet()
+            }
+            val outcome = try {
+                mover.copyBack(treeUri, docId, originalParentDocId, row.displayName, row.mime, existingNames = names)
+            } catch (ce: kotlinx.coroutines.CancellationException) {
+                throw ce
+            } catch (e: Exception) {
+                Mover.Outcome.Failed(e.message ?: "restore-error")
+            }
             when (outcome) {
                 is Mover.Outcome.Moved -> {
-                    val deleted = runCatching {
-                        DocumentsContract.deleteDocument(context.contentResolver, destUri)
-                    }.getOrDefault(false)
-                    if (deleted) {
-                        restored++
-                        db.moveLogDao().updateStatus(row.id, "UNDONE", null, "restored")
-                    } else {
-                        failed++
-                        db.moveLogDao().updateStatus(row.id, "MOVED", row.destDocId, "restore-delete-failed")
-                        stopped = true
-                        break
-                    }
+                    restored++
+                    names += outcome.destName
+                    db.moveLogDao().updateStatus(row.id, "UNDONE", null, "restored")
                 }
                 is Mover.Outcome.SkippedDuplicate -> {
                     restored++

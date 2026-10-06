@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Unit tests run on the JVM against the app's merged manifest; the inert
-         ComponentActivity host is declared in the main manifest. Nothing to add here. -->
+    <!-- Unit tests run on the JVM against the variant-merged manifest; the
+         ComponentActivity test host is declared in the main manifest because
+         Robolectric registers components from the binary variant APK, which
+         does not merge src/test manifests. -->
     <application />
 </manifest>

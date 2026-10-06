@@ -354,6 +354,7 @@
     <string name="update_err_no_apk">The latest release has no APK file attached yet.</string>
     <string name="update_err_unexpected">Something unexpected went wrong during the check. Details are in the Error Library.</string>
     <string name="a11y_apply_progress">Sorted %1$d of %2$d</string>
+    <string name="a11y_apply_progress_bytes">%1$s of %2$s moved</string>
     <string name="pattern_prefix">Starts with</string>
     <string name="pattern_suffix">Ends with</string>
     <string name="pattern_contains">Contains</string>
@@ -362,4 +363,53 @@
     <string name="wizard_step_preview">Preview</string>
     <string name="home_files_sorted">Files sorted</string>
     <string name="history_search_hint">Search operations…</string>
+
+    <!-- 1.2.0: Split by capacity -->
+    <string name="mode_capacity">Split by capacity</string>
+    <string name="mode_capacity_desc">Fill Part 01, Part 02, … folders that each stay under a size limit you choose</string>
+    <string name="short_mode_capacity">Capacity</string>
+    <string name="capacity_preset_1gb">1 GB</string>
+    <string name="capacity_preset_2gb">2 GB</string>
+    <string name="capacity_preset_3gb">3 GB</string>
+    <string name="capacity_preset_4gb">4 GB</string>
+    <string name="capacity_preset_custom">Custom</string>
+    <string name="capacity_custom_label">Size per folder</string>
+    <string name="capacity_order_label">File order</string>
+    <string name="capacity_order_sequential">Keep order</string>
+    <string name="capacity_order_bestfit">Fewest folders</string>
+    <string name="capacity_prefix_label">Folder name prefix</string>
+    <string name="capacity_prefix_helper">Parts are numbered: %1$s 01, %1$s 02, …</string>
+    <string name="capacity_unit_helper_decimal">Decimal units: 1 GB = 1,000,000,000 bytes</string>
+    <string name="capacity_unit_helper_binary">Binary units: 1 GiB = 1,073,741,824 bytes</string>
+    <string name="capacity_error_invalid">Enter a number, for example 2.5</string>
+    <string name="capacity_error_min">Minimum is 50 MB</string>
+    <string name="capacity_error_max">Maximum is 1 TB</string>
+    <string name="capacity_estimate_folders">About %1$d folders</string>
+    <string name="capacity_estimate_largest">largest %1$s</string>
+    <string name="capacity_folders_title">Folder usage</string>
+    <string name="capacity_folder_row">%1$d files · %2$s / %3$s</string>
+    <string name="capacity_oversized_chip">Oversized</string>
+    <string name="warn_capacity_oversized">%1$d files are larger than the limit. They go into an \"Oversized\" folder and are never split.</string>
+    <string name="capacity_cap_used">Folder cap: %1$s</string>
+    <string name="replace_confirm_title">Replace existing files?</string>
+    <string name="replace_confirm_body">The destination already contains files with the same names in “%1$s”. Replacing destroys the existing copies — they cannot be restored by undo.</string>
+    <string name="replace_confirm_yes">Replace files</string>
+    <string name="settings_capacity_units">Capacity units</string>
+    <string name="settings_units_decimal">Decimal: 1 GB = 1,000,000,000 bytes</string>
+    <string name="settings_units_binary">Binary: 1 GiB = 1,073,741,824 bytes</string>
+    <string name="apply_bytes_done">%1$s of %2$s moved</string>
+    <string name="job_msg_system_timeout">Paused by the system: the app reached its background work limit. Resume to continue.</string>
+    <string name="notif_progress_bytes">%1$s of %2$s</string>
+    <string name="eta_seconds">About %1$d s left</string>
+    <string name="eta_minutes">About %1$d min left</string>
+    <string name="eta_hours">About %1$d h %2$d min left</string>
+
+    <plurals name="result_retry_failed">
+        <item quantity="one">Retry %1$d failed file</item>
+        <item quantity="other">Retry %1$d failed files</item>
+    </plurals>
+    <plurals name="preview_more_files">
+        <item quantity="one">%1$d more file</item>
+        <item quantity="other">%1$d more files</item>
+    </plurals>
 </resources>

@@ -35,4 +35,6 @@ data class PlanItem(
     val destinationName: String,
     val action: PlanAction,
     val reason: String? = null,
+    /** B-08: the mime travels with the plan so destinations keep a real type. */
+    val mime: String? = null,
 )

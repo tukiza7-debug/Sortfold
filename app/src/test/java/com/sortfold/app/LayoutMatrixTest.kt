@@ -16,6 +16,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.sortfold.app.data.prefs.ThemeMode
+import com.sortfold.app.core.model.SortMode
 import com.sortfold.app.ui.home.HomeScreen
 import com.sortfold.app.ui.settings.SettingsScreen
 import com.sortfold.app.ui.theme.LocalReducedMotion
@@ -120,5 +121,67 @@ class LayoutMatrixTest {
                 onOpenErrorLibrary = {}, bottomBar = {},
             )
         }
+    }
+
+    // ------------------------------------------------------------------
+    // 1.2.0: the capacity split surfaces. The wizard runs with the capacity
+    // mode selected and the panel expanded — the estimate line, chips, custom
+    // field and order selector must hold the no-overlap/no-clip contract at
+    // small widths and large font scales, in both orientations.
+    // ------------------------------------------------------------------
+
+    private fun wizardAtCapacity(fontScale: Float) {
+        val ctx = localizedContext("en")
+        val container = AppContainer(ApplicationProvider.getApplicationContext())
+        // Pre-configure outside composition: capacity selected with the 2 GB preset.
+        val vm = com.sortfold.app.ui.wizard.WizardViewModel(
+            container,
+            startStep = com.sortfold.app.ui.wizard.WizardStep.MODES,
+        )
+        vm.toggleMode(SortMode.CAPACITY, true)
+        vm.chooseCapacity(2_000_000_000L, 1)
+        compose.setContent {
+            val activity = compose.activity
+            CompositionLocalProvider(
+                LocalContext provides ctx,
+                LocalDensity provides Density(2f, fontScale),
+                LocalReducedMotion provides true,
+                LocalActivityResultRegistryOwner provides activity,
+                LocalOnBackPressedDispatcherOwner provides activity,
+            ) {
+                SortfoldTheme(themeMode = ThemeMode.LIGHT, dynamicColor = false, reducedMotion = true) {
+                    com.sortfold.app.ui.wizard.WizardScreen(
+                        container = container,
+                        expanded = false,
+                        onExit = {},
+                        onOpenErrorLibrary = {},
+                        vmOverride = vm,
+                    )
+                }
+            }
+        }
+        compose.mainClock.autoAdvance = false
+        compose.waitForIdle()
+        val root = compose.onRoot().fetchSemanticsNode()
+        val bounds = Rect(0f, 0f, root.size.width.toFloat(), root.size.height.toFloat())
+        LayoutAssertions.assertLayoutContract(compose.onRoot(), bounds)
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = "w360dp-h740dp")
+    fun `wizard capacity panel holds the contract at 360dp and 1_3x font`() {
+        wizardAtCapacity(fontScale = 1.3f)
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = "w411dp-h800dp")
+    fun `wizard capacity panel holds the contract at 411dp portrait`() {
+        wizardAtCapacity(fontScale = 1f)
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = "w800dp-h411dp")
+    fun `wizard capacity panel holds the contract on a small tablet in landscape`() {
+        wizardAtCapacity(fontScale = 1.3f)
     }
 }

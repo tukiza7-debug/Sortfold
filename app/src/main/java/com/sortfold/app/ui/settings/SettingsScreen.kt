@@ -306,6 +306,23 @@ fun SettingsScreen(
                         leadingContent = { Icon(Icons.Filled.Tune, contentDescription = null) },
                         modifier = Modifier.clickable { showGranularityDialog = true },
                     )
+                    // 1.2.0: decimal GB vs binary GiB for the capacity split.
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_capacity_units)) },
+                        supportingContent = {
+                            Text(
+                                if (settings.capacityUnitDecimal) {
+                                    stringResource(R.string.settings_units_decimal)
+                                } else {
+                                    stringResource(R.string.settings_units_binary)
+                                },
+                            )
+                        },
+                        leadingContent = { Icon(Icons.Filled.Storage, contentDescription = null) },
+                        modifier = Modifier.clickable {
+                            vm.set { container.settingsRepository.setCapacityUnitDecimal(!settings.capacityUnitDecimal) }
+                        },
+                    )
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.settings_destination)) },
                         supportingContent = {

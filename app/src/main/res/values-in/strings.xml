@@ -334,6 +334,7 @@
     <string name="update_err_no_apk">Rilis terbaru belum memiliki file APK terlampir.</string>
     <string name="update_err_unexpected">Terjadi sesuatu yang tidak terduga saat memeriksa. Detailnya ada di Pustaka Galat.</string>
     <string name="a11y_apply_progress">%1$d dari %2$d tersortir</string>
+    <string name="a11y_apply_progress_bytes">%1$s dari %2$s terpindah</string>
     <string name="pattern_prefix">Diawali dengan</string>
     <string name="pattern_suffix">Diakhiri dengan</string>
     <string name="pattern_contains">Berisi</string>
@@ -342,4 +343,51 @@
     <string name="wizard_step_preview">Pratinjau</string>
     <string name="home_files_sorted">File tersortir</string>
     <string name="history_search_hint">Cari operasi…</string>
+
+    <!-- 1.2.0: Pisahkan berdasarkan kapasitas -->
+    <string name="mode_capacity">Pisahkan berdasarkan kapasitas</string>
+    <string name="mode_capacity_desc">Isi folder Bagian 01, Bagian 02, … yang masing-masing tidak melebihi batas ukuran pilihan Anda</string>
+    <string name="short_mode_capacity">Kapasitas</string>
+    <string name="capacity_preset_1gb">1 GB</string>
+    <string name="capacity_preset_2gb">2 GB</string>
+    <string name="capacity_preset_3gb">3 GB</string>
+    <string name="capacity_preset_4gb">4 GB</string>
+    <string name="capacity_preset_custom">Khusus</string>
+    <string name="capacity_custom_label">Ukuran per folder</string>
+    <string name="capacity_order_label">Urutan berkas</string>
+    <string name="capacity_order_sequential">Pertahankan urutan</string>
+    <string name="capacity_order_bestfit">Folder paling sedikit</string>
+    <string name="capacity_prefix_label">Awalan nama folder</string>
+    <string name="capacity_prefix_helper">Bagian diberi nomor: %1$s 01, %1$s 02, …</string>
+    <string name="capacity_unit_helper_decimal">Satuan desimal: 1 GB = 1.000.000.000 bita</string>
+    <string name="capacity_unit_helper_binary">Satuan biner: 1 GiB = 1.073.741.824 bita</string>
+    <string name="capacity_error_invalid">Masukkan angka, misalnya 2,5</string>
+    <string name="capacity_error_min">Minimal 50 MB</string>
+    <string name="capacity_error_max">Maksimal 1 TB</string>
+    <string name="capacity_estimate_folders">Sekitar %1$d folder</string>
+    <string name="capacity_estimate_largest">terbesar %1$s</string>
+    <string name="capacity_folders_title">Penggunaan folder</string>
+    <string name="capacity_folder_row">%1$d berkas · %2$s / %3$s</string>
+    <string name="capacity_oversized_chip">Melebihi batas</string>
+    <string name="warn_capacity_oversized">%1$d berkas lebih besar dari batas. Semua masuk folder \"Melebihi batas\" dan tidak dipecah.</string>
+    <string name="capacity_cap_used">Batas folder: %1$s</string>
+    <string name="replace_confirm_title">Ganti berkas yang sudah ada?</string>
+    <string name="replace_confirm_body">Tujuan sudah berisi berkas dengan nama yang sama di \u201c%1$s\u201d. Mengganti akan menghapus salinan lama — tidak dapat dipulihkan kembali.</string>
+    <string name="replace_confirm_yes">Ganti berkas</string>
+    <string name="settings_capacity_units">Satuan kapasitas</string>
+    <string name="settings_units_decimal">Desimal: 1 GB = 1.000.000.000 bita</string>
+    <string name="settings_units_binary">Biner: 1 GiB = 1.073.741.824 bita</string>
+    <string name="apply_bytes_done">%1$s dari %2$s terpindah</string>
+    <string name="job_msg_system_timeout">Dijeda oleh sistem: aplikasi mencapai batas kerja latar belakang. Lanjutkan untuk meneruskan.</string>
+    <string name="notif_progress_bytes">%1$s dari %2$s</string>
+    <string name="eta_seconds">Sekitar %1$d dtk lagi</string>
+    <string name="eta_minutes">Sekitar %1$d mnt lagi</string>
+    <string name="eta_hours">Sekitar %1$d j %2$d mnt lagi</string>
+
+    <plurals name="result_retry_failed">
+        <item quantity="other">Coba lagi %1$d berkas yang gagal</item>
+    </plurals>
+    <plurals name="preview_more_files">
+        <item quantity="other">%1$d berkas lagi</item>
+    </plurals>
 </resources>

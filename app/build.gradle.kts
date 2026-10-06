@@ -20,8 +20,8 @@ android {
         applicationId = "com.sortfold.app"
         minSdk = 29
         targetSdk = 36
-        versionCode = ciVersionCode ?: 2
-        versionName = ciVersionName ?: "1.1.0"
+        versionCode = ciVersionCode ?: 3
+        versionName = ciVersionName ?: "1.2.0"
 
         // Repo injected by CI (-PgithubRepo=owner/name). A blank value would
         // silently break the in-app update check, so the build fails instead.
@@ -50,14 +50,17 @@ android {
     // Release signing comes from environment variables set by CI (or a local release.properties).
     // When no keystore is configured, release builds fall back to the debug key so the
     // project always builds; CI sets the real credentials before publishing.
+    // B-19: GitHub passes EMPTY strings (not null) for missing secrets — blank
+    // values must be treated as "not set", or the build dies with a cryptic
+    // keystore error (or worse, silently signs with the debug key).
     val releaseProps = Properties().apply {
         val f = rootProject.file("release.properties")
         if (f.exists()) f.inputStream().use { load(it) }
     }
-    val ksFile = System.getenv("KEYSTORE_FILE") ?: releaseProps.getProperty("keystoreFile")
-    val ksAlias = System.getenv("KEY_ALIAS") ?: releaseProps.getProperty("keyAlias")
-    val ksPass = System.getenv("KEYSTORE_PASSWORD") ?: releaseProps.getProperty("keystorePassword")
-    val keyPass = System.getenv("KEY_PASSWORD") ?: releaseProps.getProperty("keyPassword")
+    val ksFile = (System.getenv("KEYSTORE_FILE") ?: releaseProps.getProperty("keystoreFile"))?.takeIf { it.isNotBlank() }
+    val ksAlias = (System.getenv("KEY_ALIAS") ?: releaseProps.getProperty("keyAlias"))?.takeIf { it.isNotBlank() }
+    val ksPass = (System.getenv("KEYSTORE_PASSWORD") ?: releaseProps.getProperty("keystorePassword"))?.takeIf { it.isNotBlank() }
+    val keyPass = (System.getenv("KEY_PASSWORD") ?: releaseProps.getProperty("keyPassword"))?.takeIf { it.isNotBlank() }
     val hasReleaseKey = ksFile != null && ksAlias != null && ksPass != null && keyPass != null
 
     signingConfigs {

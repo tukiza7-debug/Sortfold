@@ -50,6 +50,7 @@ import com.sortfold.app.ui.theme.Motion
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import androidx.compose.animation.core.Spring
 
 /** Loading / ready state so a slow Room read never flashes "not found". */
@@ -145,6 +146,13 @@ fun JobResultScreen(
                                         style = MaterialTheme.typography.bodyMedium,
                                     )
                                 }
+                                // 1.2.0: the folder cap a capacity job ran with.
+                                j.capacityBytes?.let { cap ->
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                        Text(stringResource(R.string.capacity_cap_used), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text(Formatters.bytes(context, cap))
+                                    }
+                                }
                                 j.message?.let { m ->
                                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                         Text(stringResource(R.string.result_note), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -176,6 +184,23 @@ fun JobResultScreen(
                                 onClick = { com.sortfold.app.work.WorkScheduler.resumeJob(context, jobId) },
                                 modifier = Modifier.fillMaxWidth(),
                             ) { Text(stringResource(R.string.action_resume)) }
+                        }
+                        // B-07: offer a clean retry pass over the failed rows.
+                        if (j.status in setOf("PARTIAL", "FAILED")) {
+                            val failedCount by container.database.moveLogDao().observeFailedCount(jobId)
+                                .collectAsStateWithLifecycle(initialValue = 0)
+                            if (failedCount > 0) {
+                                OutlinedButton(
+                                    onClick = {
+                                        container.appScope.launch {
+                                            com.sortfold.app.work.WorkScheduler.retryFailed(context, jobId)
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(pluralStringResource(R.plurals.result_retry_failed, failedCount, failedCount))
+                                }
+                            }
                         }
                         if (j.status != "UNDONE" && j.status != "UNDOING" && j.doneFiles > 0) {
                             OutlinedButton(
@@ -296,5 +321,6 @@ private fun modeNameOf(mode: String): String = when (mode) {
     "SIZE" -> stringResource(R.string.mode_size)
     "EXTENSION" -> stringResource(R.string.mode_extension)
     "NAME_PATTERN" -> stringResource(R.string.mode_name_pattern)
+    "CAPACITY" -> stringResource(R.string.mode_capacity)
     else -> mode
 }

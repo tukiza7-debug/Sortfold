@@ -37,6 +37,7 @@ import com.sortfold.app.ui.theme.Motion
 import com.sortfold.app.ui.wizard.JobResultScreen
 import com.sortfold.app.ui.wizard.WizardScreen
 import com.sortfold.app.util.Locales
+import androidx.compose.animation.scaleIn
 import kotlinx.coroutines.launch
 
 /** Routes reached from the Settings group; they share the shared-axis motion. */
@@ -80,7 +81,8 @@ fun SortfoldNavHost(
             } else if (targetUsesSharedAxis(targetState.destination.route)) {
                 slideInHorizontally(Motion.enter()) { it / 4 * forwardDir() } + fadeIn(Motion.enter())
             } else {
-                fadeIn(Motion.enter())
+                // C-02 fade-through: enter fades in with an 8% scale-up.
+                fadeIn(Motion.enter()) + scaleIn(Motion.enter(), initialScale = 0.92f)
             }
         },
         exitTransition = {
@@ -89,7 +91,8 @@ fun SortfoldNavHost(
             } else if (targetUsesSharedAxis(initialState.destination.route)) {
                 slideOutHorizontally(Motion.exit()) { -it / 4 * forwardDir() } + fadeOut(Motion.exit())
             } else {
-                fadeOut(Motion.exit())
+                // C-02: top-level destinations fade out first, in 90 ms.
+                fadeOut(Motion.fadeThroughExit())
             }
         },
     ) {

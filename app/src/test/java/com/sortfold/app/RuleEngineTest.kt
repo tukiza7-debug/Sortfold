@@ -103,7 +103,8 @@ class RuleEngineTest {
         assertEquals(ResolutionClass.UHD_4K, ResolutionClass.of(3840, 2160))
         assertEquals(ResolutionClass.HD, ResolutionClass.of(1920, 1080))
         assertEquals(ResolutionClass.SD, ResolutionClass.of(640, 480))
-        assertEquals(ResolutionClass.SD, ResolutionClass.of(null, null))
+        // B-16: unreadable dimensions are Unknown, not silently SD.
+        assertEquals(ResolutionClass.UNKNOWN, ResolutionClass.of(null, null))
     }
 
     @Test

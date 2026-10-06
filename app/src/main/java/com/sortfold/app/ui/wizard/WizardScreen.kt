@@ -2,9 +2,12 @@ package com.sortfold.app.ui.wizard
 
 import android.Manifest
 import android.content.Context
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -27,11 +31,11 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,11 +43,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -51,6 +59,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.material3.Scaffold
@@ -65,6 +74,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -79,6 +90,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sortfold.app.AppContainer
 import com.sortfold.app.R
+import com.sortfold.app.core.model.CapacityOrder
 import com.sortfold.app.core.model.DateGranularity
 import com.sortfold.app.core.model.DuplicatePolicy
 import com.sortfold.app.core.model.MediaType
@@ -87,12 +99,16 @@ import com.sortfold.app.core.model.NameRule
 import com.sortfold.app.core.model.SortMode
 import com.sortfold.app.data.db.MoveLogEntity
 import com.sortfold.app.data.db.SortJobEntity
+import com.sortfold.app.ui.common.CapacityEstimate
+import com.sortfold.app.ui.common.CapacityPanel
 import com.sortfold.app.ui.common.DelayedLoader
 import com.sortfold.app.ui.common.EmptyState
 import com.sortfold.app.ui.common.ErrorState
 import com.sortfold.app.ui.common.Formatters
 import com.sortfold.app.ui.common.SectionHeader
 import com.sortfold.app.ui.common.SortedBarsLoader
+import com.sortfold.app.ui.common.capacityErrorRes
+import com.sortfold.app.ui.common.parseCustomCapacity
 import com.sortfold.app.ui.home.simpleFactory
 import com.sortfold.app.ui.permissions.MediaPermissions
 import com.sortfold.app.ui.theme.LocalReducedMotion
@@ -100,6 +116,8 @@ import com.sortfold.app.ui.theme.Motion
 import com.sortfold.app.ui.theme.pressable
 import com.sortfold.app.ui.theme.rememberHaptics
 import com.sortfold.app.ui.theme.rememberPressInteraction
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 @Composable
 fun jobStatusLabel(status: String): String = stringResource(
@@ -124,8 +142,11 @@ fun WizardScreen(
     expanded: Boolean,
     onExit: () -> Unit,
     onOpenErrorLibrary: () -> Unit = {},
+    /** Test seam: LayoutMatrixTest drives a pre-configured view model. */
+    vmOverride: WizardViewModel? = null,
 ) {
-    val vm: WizardViewModel = viewModel(factory = simpleFactory { WizardViewModel(container) })
+    val vm: WizardViewModel = vmOverride
+        ?: viewModel(factory = simpleFactory { WizardViewModel(container) })
     val context = LocalContext.current
 
     val job by vm.job.collectAsStateWithLifecycle()
@@ -135,6 +156,7 @@ fun WizardScreen(
     )
 
     var showConfirm by rememberSaveable { mutableStateOf(false) }
+    var showReplaceConfirm by rememberSaveable { mutableStateOf(false) }
     var showNotifRationale by rememberSaveable { mutableStateOf(false) }
     var pendingApply by rememberSaveable { mutableStateOf(false) }
     val haptics = rememberHaptics()
@@ -159,6 +181,15 @@ fun WizardScreen(
         haptics() // light confirmation tick on the primary action (Part B5)
         showConfirm = false
         startApplyFlow()
+    }
+
+    // B-01: a plan that replaces files gets its own dedicated confirmation.
+    fun requestApply() {
+        when {
+            vm.hasReplacePlan -> showReplaceConfirm = true
+            settings.confirmBeforeApply -> showConfirm = true
+            else -> startApplyFlow()
+        }
     }
 
     LaunchedEffect(job?.status) {
@@ -186,8 +217,7 @@ fun WizardScreen(
                     when (vm.step) {
                         WizardStep.FOLDER -> vm.goToModes()
                         WizardStep.MODES -> vm.buildPreview(context)
-                        WizardStep.PREVIEW ->
-                            if (settings.confirmBeforeApply) showConfirm = true else startApplyFlow()
+                        WizardStep.PREVIEW -> requestApply()
                         else -> {}
                     }
                 })
@@ -197,9 +227,35 @@ fun WizardScreen(
         val contentModifier = Modifier
             .fillMaxSize()
             .padding(padding)
+
+        // C-02: predictive back — the current step scales to 0.92 and follows
+        // the gesture; on commit it steps back. Reduced motion: plain back.
+        val backScale = remember { Animatable(1f) }
+        val reducedMotion = LocalReducedMotion.current
+        val canPredict = vm.step == WizardStep.MODES || vm.step == WizardStep.PREVIEW
+        if (!reducedMotion && canPredict) {
+            PredictiveBackHandler(enabled = canPredict) { events ->
+                try {
+                    events.collect { event ->
+                        backScale.snapTo(1f - 0.08f * event.progress)
+                    }
+                    backScale.snapTo(1f)
+                    vm.goBack()
+                } catch (_: CancellationException) {
+                    // Gesture cancelled: restore and stay on this step.
+                    backScale.snapTo(1f)
+                }
+            }
+        }
+
         if (expanded) {
             // Two-pane: options left, live preview / progress right.
-            Row(contentModifier) {
+            Row(
+                contentModifier.graphicsLayer {
+                    scaleX = backScale.value
+                    scaleY = backScale.value
+                },
+            ) {
                 Column(
                     Modifier
                         .weight(0.42f)
@@ -207,7 +263,7 @@ fun WizardScreen(
                         .padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    StepContent(vm, context, job, previewRows, onOpenErrorLibrary)
+                    StepContent(vm, context, job, previewRows, onOpenErrorLibrary, settings.capacityUnitDecimal)
                 }
                 Column(
                     Modifier
@@ -215,17 +271,21 @@ fun WizardScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(24.dp),
                 ) {
-                    SidePane(vm, job, previewRows)
+                    SidePane(vm, job, previewRows, settings.capacityUnitDecimal)
                 }
             }
         } else {
             Column(
                 contentModifier
+                    .graphicsLayer {
+                        scaleX = backScale.value
+                        scaleY = backScale.value
+                    }
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                StepContent(vm, context, job, previewRows, onOpenErrorLibrary)
+                StepContent(vm, context, job, previewRows, onOpenErrorLibrary, settings.capacityUnitDecimal)
             }
         }
 
@@ -252,6 +312,28 @@ fun WizardScreen(
                 dismissButton = {
                     // Safe default: cancel keeps the plan untouched.
                     TextButton(onClick = { showConfirm = false }) { Text(stringResource(R.string.action_cancel)) }
+                },
+            )
+        }
+
+        // B-01: replacing files is destructive — explicit confirmation.
+        if (showReplaceConfirm) {
+            AlertDialog(
+                onDismissRequest = { showReplaceConfirm = false },
+                title = { Text(stringResource(R.string.replace_confirm_title)) },
+                text = {
+                    Text(stringResource(R.string.replace_confirm_body, vm.treeLabel))
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showReplaceConfirm = false
+                        if (settings.confirmBeforeApply) showConfirm = true else startApplyFlow()
+                    }) {
+                        Text(stringResource(R.string.replace_confirm_yes), color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showReplaceConfirm = false }) { Text(stringResource(R.string.action_cancel)) }
                 },
             )
         }
@@ -301,6 +383,7 @@ private fun StepContent(
     job: SortJobEntity?,
     previewRows: List<MoveLogEntity>,
     onOpenErrorLibrary: () -> Unit,
+    unitDecimal: Boolean,
 ) {
     val reduced = LocalReducedMotion.current
     val layoutDir = LocalLayoutDirection.current
@@ -350,7 +433,7 @@ private fun StepContent(
                 }
                 when (step) {
                     WizardStep.FOLDER -> FolderStep(vm, context, onOpenErrorLibrary)
-                    WizardStep.MODES -> ModesStep(vm)
+                    WizardStep.MODES -> ModesStep(vm, unitDecimal)
                     WizardStep.PREVIEW -> PreviewStep(vm, previewRows, context)
                     WizardStep.APPLY -> ApplyStep(vm, job)
                     WizardStep.RESULT -> ResultStep(vm, job, context)
@@ -363,9 +446,11 @@ private fun StepContent(
 /**
  * Visual 1-2-3 stepper for the three planning steps. Completed steps get a
  * check, the current step is emphasized; Apply/Result are outside the flow.
+ * C-02: the active node scales 1.0 -> 1.1 and re-colors with Motion.small().
  */
 @Composable
 private fun WizardStepper(current: WizardStep, onStepSelected: (WizardStep) -> Unit) {
+    val reduced = LocalReducedMotion.current
     val steps = listOf(
         WizardStep.FOLDER to Icons.Filled.Folder,
         WizardStep.MODES to Icons.AutoMirrored.Filled.List,
@@ -375,11 +460,20 @@ private fun WizardStepper(current: WizardStep, onStepSelected: (WizardStep) -> U
     steps.forEachIndexed { i, (step, icon) ->
         val done = i < currentIndex
         val active = i == currentIndex
-        val color = when {
-            active -> MaterialTheme.colorScheme.primary
-            done -> MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
-            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
-        }
+        val nodeScale by animateFloatAsState(
+            targetValue = if (active && !reduced) 1.1f else 1f,
+            animationSpec = if (reduced) Motion.reduced() else Motion.small(),
+            label = "stepper-node-scale",
+        )
+        val color by animateColorAsState(
+            targetValue = when {
+                active -> MaterialTheme.colorScheme.primary
+                done -> MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+                else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+            },
+            animationSpec = if (reduced) Motion.reduced() else Motion.small(),
+            label = "stepper-node-color",
+        )
         val interaction = rememberPressInteraction()
         Row(
             Modifier
@@ -393,7 +487,17 @@ private fun WizardStepper(current: WizardStep, onStepSelected: (WizardStep) -> U
             if (done) {
                 Icon(Icons.Filled.Check, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
             } else {
-                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .graphicsLayer {
+                            scaleX = nodeScale
+                            scaleY = nodeScale
+                        },
+                )
             }
             Text(
                 stringResource(
@@ -451,8 +555,6 @@ private fun WizardBottomBar(vm: WizardViewModel, context: Context, onAdvance: ()
 
 @Composable
 private fun FolderStep(vm: WizardViewModel, context: Context, onOpenErrorLibrary: () -> Unit) {
-    var showMediaRationale by rememberSaveable { mutableStateOf(false) }
-
     val pickFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) vm.setFolder(uri, context)
     }
@@ -464,53 +566,17 @@ private fun FolderStep(vm: WizardViewModel, context: Context, onOpenErrorLibrary
         }
     }
 
-    val mediaPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) { result ->
-        val anyGranted = result.values.any { it }
-        vm.onMediaPermissionsResult(!anyGranted)
-        pickFolder.launch(null)
-    }
-
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(stringResource(R.string.wizard_folder_intro), style = MaterialTheme.typography.bodyLarge)
 
+        // B-18: the scanner only ever reads through SAF, so no media runtime
+        // permission is requested — the folder picker opens directly.
         Button(
-            onClick = {
-                if (MediaPermissions.hasAnyMediaRead(context)) {
-                    pickFolder.launch(null)
-                } else {
-                    showMediaRationale = true
-                }
-            },
+            onClick = { pickFolder.launch(null) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
         ) { Text(stringResource(R.string.wizard_pick_folder)) }
-
-        if (showMediaRationale) {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.rationale_media_title), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.rationale_media_body))
-                    Text(
-                        stringResource(R.string.rationale_media_will_not),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = {
-                            showMediaRationale = false
-                            mediaPermissionLauncher.launch(MediaPermissions.mediaReadPermissions())
-                        }) { Text(stringResource(R.string.rationale_continue)) }
-                        TextButton(onClick = {
-                            showMediaRationale = false
-                            pickFolder.launch(null) // SAF needs no runtime permission
-                        }) { Text(stringResource(R.string.rationale_without)) }
-                    }
-                }
-            }
-        }
 
         if (vm.scanning) {
             DelayedLoader(busy = vm.scanning, label = stringResource(R.string.wizard_scanning))
@@ -560,17 +626,6 @@ private fun FolderStep(vm: WizardViewModel, context: Context, onOpenErrorLibrary
                     description = stringResource(R.string.wizard_empty_body),
                 )
             }
-            if (vm.mediaReadDenied) {
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.perm_degraded_title), style = MaterialTheme.typography.titleSmall)
-                        Text(stringResource(R.string.perm_degraded_body), style = MaterialTheme.typography.bodySmall)
-                        TextButton(onClick = { openAppSettings(context) }) {
-                            Text(stringResource(R.string.action_open_settings))
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -583,31 +638,136 @@ fun openAppSettings(context: Context) {
 
 // ---------------- Step 2: choose sort type ----------------
 
+/**
+ * One mode as a tappable card. C-03: selecting/deselecting cross-fades the
+ * border and container colors, and the check icon scales in with the entry
+ * spring; press feedback comes from the shared pressable() modifier.
+ */
 @Composable
-private fun ModesStep(vm: WizardViewModel) {
+private fun ModeCard(mode: SortMode, checked: Boolean, onChecked: (Boolean) -> Unit) {
+    val reduced = LocalReducedMotion.current
+    val interaction = rememberPressInteraction()
+    val containerColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+        animationSpec = if (reduced) Motion.reduced() else Motion.small(),
+        label = "mode-card-container",
+    )
+    val checkScale by animateFloatAsState(
+        targetValue = if (checked) 1f else 0f,
+        animationSpec = if (reduced) Motion.reduced() else Motion.entrySpring(),
+        label = "mode-card-check",
+    )
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pressable(interaction),
+        border = BorderStroke(
+            width = if (checked) 2.dp else 1.dp,
+            color = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+        ),
+        colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clickable(interactionSource = interaction, indication = null) { onChecked(!checked) }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                Modifier
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(14.dp)
+                        .graphicsLayer {
+                            scaleX = checkScale
+                            scaleY = checkScale
+                        },
+                )
+            }
+            Column(Modifier.weight(1f)) {
+                Text(modeLabel(mode), style = MaterialTheme.typography.titleSmall)
+                Text(
+                    modeDescription(mode),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModesStep(vm: WizardViewModel, unitDecimal: Boolean) {
+    val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         if (vm.suggestions.isNotEmpty()) {
             SuggestionCard(vm)
         }
         SectionHeader(stringResource(R.string.wizard_modes_title))
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SortMode.entries.forEach { mode ->
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(
-                        checked = mode in vm.selectedModes,
-                        onCheckedChange = { checked -> vm.toggleMode(mode, checked) },
+                ModeCard(
+                    mode = mode,
+                    checked = mode in vm.selectedModes,
+                    onChecked = { vm.toggleMode(mode, it) },
+                )
+                // 1.2.0: the capacity panel expands inline under its card.
+                if (mode == SortMode.CAPACITY && mode in vm.selectedModes) {
+                    CapacityPanel(
+                        visible = true,
+                        presetIndex = vm.capacityPresetIndex,
+                        customText = vm.capacityCustomText,
+                        order = vm.capacityOrder,
+                        prefix = vm.capacityPrefix,
+                        unit = vm.capacityUnit,
+                        unitDecimal = unitDecimal,
+                        error = vm.capacityError,
+                        estimate = vm.capacityEstimate,
+                        onPreset = { bytes, index ->
+                            if (index == 4) {
+                                // Custom: bytes arrive once a valid value is typed.
+                                vm.chooseCapacity(vm.capacityBytes, 4)
+                            } else {
+                                vm.capacityCustomText = ""
+                                vm.reportCapacityError(null)
+                                vm.chooseCapacity(bytes, index)
+                            }
+                        },
+                        onCustomText = { text ->
+                            vm.capacityCustomText = text
+                            val parsed = parseCustomCapacity(text, vm.capacityUnit, unitDecimal)
+                            if (parsed != null) {
+                                vm.reportCapacityError(null)
+                                vm.chooseCapacity(parsed, 4)
+                            } else {
+                                vm.reportCapacityError(capacityErrorRes(text, vm.capacityUnit, unitDecimal)?.let { context.getString(it) })
+                                vm.chooseCapacity(null, 4)
+                            }
+                        },
+                        onOrder = vm::chooseCapacityOrder,
+                        onPrefix = vm::chooseCapacityPrefix,
+                        onUnit = { u ->
+                            vm.chooseCapacityUnit(u)
+                            // Re-validate the text under the new unit.
+                            val parsed = parseCustomCapacity(vm.capacityCustomText, u, unitDecimal)
+                            if (parsed != null) {
+                                vm.reportCapacityError(null)
+                                vm.chooseCapacity(parsed, 4)
+                            } else {
+                                vm.reportCapacityError(capacityErrorRes(vm.capacityCustomText, u, unitDecimal)?.let { context.getString(it) })
+                            }
+                        },
                     )
-                    Column {
-                        Text(modeLabel(mode))
-                        Text(
-                            modeDescription(mode),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
                 }
             }
         }
@@ -753,6 +913,12 @@ private fun PreviewStep(vm: WizardViewModel, rows: List<MoveLogEntity>, context:
             }
         }
 
+        // 1.2.0: when the capacity split is active, per-folder usage rows come
+        // first: "Part 01 · 38 files · 1.97 GB / 2 GB" with a thin bar.
+        if (SortMode.CAPACITY in vm.selectedModes && vm.capacityBytes != null) {
+            CapacityFolderSummary(rows, vm.capacityBytes!!, context)
+        }
+
         vm.warnings.forEach { w ->
             Card(
                 colors = CardDefaults.cardColors(
@@ -760,7 +926,7 @@ private fun PreviewStep(vm: WizardViewModel, rows: List<MoveLogEntity>, context:
                 ),
             ) {
                 Text(
-                    warningLabel(w.key),
+                    warningLabel(w),
                     Modifier.padding(16.dp),
                     color = if (w.blocking) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer,
                 )
@@ -804,6 +970,84 @@ private fun PreviewStep(vm: WizardViewModel, rows: List<MoveLogEntity>, context:
     }
 }
 
+/**
+ * Per-folder usage for the capacity split: name, file count, used/cap and a
+ * thin progress bar. Oversized files get a clearly labelled row with a
+ * warning chip.
+ */
+@Composable
+private fun CapacityFolderSummary(rows: List<MoveLogEntity>, capBytes: Long, context: Context) {
+    val grouped = rows.groupBy { it.destFolder }
+    if (grouped.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionHeader(stringResource(R.string.capacity_folders_title))
+        grouped.forEach { (folder, items) ->
+            val used = items.sumOf { it.sizeBytes }
+            val isOversized = folder.substringAfterLast('/') == com.sortfold.app.core.rules.CapacityPacker.OVERSIZED_FOLDER
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        folder.substringAfterLast('/'),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.weight(1f, fill = false),
+                        maxLines = 1,
+                    )
+                    if (isOversized) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.errorContainer,
+                        ) {
+                            Row(
+                                Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Icon(
+                                    Icons.Filled.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(12.dp),
+                                )
+                                Text(
+                                    stringResource(R.string.capacity_oversized_chip),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        if (isOversized) {
+                            Formatters.bytes(context, used)
+                        } else {
+                            stringResource(
+                                R.string.capacity_folder_row,
+                                items.size,
+                                Formatters.bytes(context, used),
+                                Formatters.bytes(context, capBytes),
+                            )
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (!isOversized && capBytes > 0) {
+                    LinearProgressIndicator(
+                        progress = { (used.toFloat() / capBytes).coerceIn(0f, 1f) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun KeyValue(key: String, value: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -824,18 +1068,45 @@ private fun ApplyStep(vm: WizardViewModel, job: SortJobEntity?) {
     ) {
         val total = job?.totalFiles ?: 0
         val done = job?.doneFiles ?: 0
+        val totalBytes = job?.totalBytes ?: 0L
+        val doneBytes = job?.doneBytes ?: 0L
         Text(stringResource(R.string.apply_running), style = MaterialTheme.typography.titleMedium)
-        if (total > 0) {
-            val progressLabel = stringResource(R.string.a11y_apply_progress, done, total)
-            LinearProgressIndicator(
-                progress = { done.toFloat() / total },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .semantics { contentDescription = progressLabel },
-            )
-        } else {
-            CircularProgressIndicator(Modifier.size(40.dp))
+        when {
+            // B-03: byte-based progress whenever the plan has bytes — a 3 GB
+            // video no longer looks frozen at one file out of 40.
+            totalBytes > 0 -> {
+                val progressLabel = stringResource(
+                    R.string.a11y_apply_progress_bytes,
+                    Formatters.bytes(context, doneBytes),
+                    Formatters.bytes(context, totalBytes),
+                )
+                LinearProgressIndicator(
+                    progress = { (doneBytes.toFloat() / totalBytes).coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .semantics { contentDescription = progressLabel },
+                )
+                Text(
+                    stringResource(
+                        R.string.apply_bytes_done,
+                        Formatters.bytes(context, doneBytes),
+                        Formatters.bytes(context, totalBytes),
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            total > 0 -> {
+                val progressLabel = stringResource(R.string.a11y_apply_progress, done, total)
+                LinearProgressIndicator(
+                    progress = { done.toFloat() / total },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .semantics { contentDescription = progressLabel },
+                )
+            }
+            else -> CircularProgressIndicator(Modifier.size(40.dp))
         }
         Text(
             pluralStringResource(R.plurals.job_files_done, total, done, total),
@@ -875,6 +1146,10 @@ private fun ResultStep(vm: WizardViewModel, job: SortJobEntity?, context: Contex
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     KeyValue(stringResource(R.string.preview_move_count), "${it.doneFiles} / ${it.totalFiles}")
                     KeyValue(stringResource(R.string.preview_total_size), Formatters.bytes(context, it.doneBytes))
+                    // 1.2.0: show the folder cap a capacity job ran with.
+                    it.capacityBytes?.let { cap ->
+                        KeyValue(stringResource(R.string.capacity_cap_used), Formatters.bytes(context, cap))
+                    }
                     it.message?.let { m -> KeyValue(stringResource(R.string.result_note), m) }
                 }
             }
@@ -906,7 +1181,12 @@ private fun ResultStep(vm: WizardViewModel, job: SortJobEntity?, context: Contex
 // ---------------- Live preview side pane (expanded layout) ----------------
 
 @Composable
-private fun SidePane(vm: WizardViewModel, job: SortJobEntity?, previewRows: List<MoveLogEntity>) {
+private fun SidePane(
+    vm: WizardViewModel,
+    job: SortJobEntity?,
+    previewRows: List<MoveLogEntity>,
+    unitDecimal: Boolean,
+) {
     val context = LocalContext.current
     when (vm.step) {
         WizardStep.FOLDER, WizardStep.MODES -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -917,8 +1197,11 @@ private fun SidePane(vm: WizardViewModel, job: SortJobEntity?, previewRows: List
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
+                // 1.2.0: CAPACITY grouping is computed on the WHOLE list; the
+                // pane only ever displays a slice of the result.
+                val slice = vm.livePreview.take(40)
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(vm.livePreview, key = { it.documentId }) { item ->
+                    items(slice, key = { it.documentId }) { item ->
                         Card {
                             Column(Modifier.padding(12.dp)) {
                                 Text(item.displayName, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
@@ -930,6 +1213,13 @@ private fun SidePane(vm: WizardViewModel, job: SortJobEntity?, previewRows: List
                             }
                         }
                     }
+                }
+                if (vm.livePreview.size > slice.size) {
+                    Text(
+                        pluralStringResource(R.plurals.preview_more_files, vm.livePreview.size - slice.size, vm.livePreview.size - slice.size),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
@@ -951,6 +1241,7 @@ fun modeLabel(mode: SortMode): String = stringResource(
         SortMode.SIZE -> R.string.mode_size
         SortMode.EXTENSION -> R.string.mode_extension
         SortMode.NAME_PATTERN -> R.string.mode_name_pattern
+        SortMode.CAPACITY -> R.string.mode_capacity
     },
 )
 
@@ -964,6 +1255,7 @@ private fun modeDescription(mode: SortMode): String = stringResource(
         SortMode.SIZE -> R.string.mode_size_desc
         SortMode.EXTENSION -> R.string.mode_extension_desc
         SortMode.NAME_PATTERN -> R.string.mode_name_pattern_desc
+        SortMode.CAPACITY -> R.string.mode_capacity_desc
     },
 )
 
@@ -986,16 +1278,15 @@ fun duplicateLabel(policy: DuplicatePolicy): String = stringResource(
 )
 
 @Composable
-private fun warningLabel(key: String): String = stringResource(
-    when (key) {
-        "batch_files" -> R.string.warn_batch_files
-        "batch_bytes" -> R.string.warn_batch_bytes
-        "low_storage" -> R.string.warn_low_storage
-        "insufficient_storage" -> R.string.warn_insufficient
-        "replacing" -> R.string.warn_replacing
-        "storage_root" -> R.string.warn_storage_root
-        "app_private" -> R.string.warn_app_private
-        "system_folder" -> R.string.warn_system_folder
-        else -> R.string.warn_unknown
-    },
-)
+private fun warningLabel(w: WizardWarning): String = when (w.key) {
+    "batch_files" -> stringResource(R.string.warn_batch_files)
+    "batch_bytes" -> stringResource(R.string.warn_batch_bytes)
+    "low_storage" -> stringResource(R.string.warn_low_storage)
+    "insufficient_storage" -> stringResource(R.string.warn_insufficient)
+    "replacing" -> stringResource(R.string.warn_replacing)
+    "storage_root" -> stringResource(R.string.warn_storage_root)
+    "app_private" -> stringResource(R.string.warn_app_private)
+    "system_folder" -> stringResource(R.string.warn_system_folder)
+    "capacity_oversized" -> stringResource(R.string.warn_capacity_oversized, w.count)
+    else -> stringResource(R.string.warn_unknown)
+}

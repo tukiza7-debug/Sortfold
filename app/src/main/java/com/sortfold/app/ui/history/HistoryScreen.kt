@@ -143,6 +143,14 @@ private fun HistoryCard(job: SortJobEntity, onClick: () -> Unit, modifier: Modif
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            // 1.2.0: show the cap used by capacity jobs at a glance.
+            job.capacityBytes?.let { cap ->
+                Text(
+                    stringResource(R.string.capacity_cap_used, com.sortfold.app.ui.common.Formatters.bytes(androidx.compose.ui.platform.LocalContext.current, cap)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Text(
                 com.sortfold.app.ui.common.Formatters.date(job.createdAt),
                 style = MaterialTheme.typography.bodySmall,

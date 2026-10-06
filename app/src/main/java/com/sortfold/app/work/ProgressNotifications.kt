@@ -71,6 +71,45 @@ object ProgressNotifications {
             .addAction(0, context.getString(R.string.notif_action_cancel), actionIntent(context, ACTION_CANCEL, jobId))
             .build()
 
+    /**
+     * B-03: byte-based progress with the current file name, so a long 3 GB
+     * copy keeps moving in the notification. ETA appears only after 10 s.
+     */
+    fun progressBytes(
+        context: Context,
+        jobId: Long,
+        bytesDone: Long,
+        bytesTotal: Long,
+        currentFile: String,
+        eta: String?,
+    ): Notification {
+        val text = buildString {
+            append(
+                context.getString(
+                    R.string.notif_progress_bytes,
+                    android.text.format.Formatter.formatFileSize(context, bytesDone),
+                    android.text.format.Formatter.formatFileSize(context, bytesTotal),
+                ),
+            )
+            if (currentFile.isNotBlank()) {
+                append(" \u00b7 ")
+                append(currentFile)
+            }
+        }
+        return NotificationCompat.Builder(context, CHANNEL_PROGRESS)
+            .setSmallIcon(R.drawable.ic_stat_sortfold)
+            .setContentTitle(context.getString(R.string.notif_progress_title))
+            .setContentText(text)
+            .setSubText(eta)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setContentIntent(openAppIntent(context, jobId))
+            .setProgress(bytesTotal.toInt(), bytesDone.toInt(), bytesTotal <= 0)
+            .addAction(0, context.getString(R.string.notif_action_pause), actionIntent(context, ACTION_PAUSE, jobId))
+            .addAction(0, context.getString(R.string.notif_action_cancel), actionIntent(context, ACTION_CANCEL, jobId))
+            .build()
+    }
+
     fun completed(context: Context, jobId: Long, titleRes: Int, text: String): Notification =
         NotificationCompat.Builder(context, CHANNEL_DONE)
             .setSmallIcon(R.drawable.ic_stat_sortfold)

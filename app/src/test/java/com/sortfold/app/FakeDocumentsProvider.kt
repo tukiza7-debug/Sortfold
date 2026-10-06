@@ -35,11 +35,19 @@ class FakeDocumentsProvider : DocumentsProvider() {
         @Volatile
         var failOpensWithSecurityException: Boolean = false
 
+        /**
+         * 1.2.0 B-04 test hook: whether the provider advertises and supports
+         * DocumentsContract.moveDocument (real ExternalStorageProvider does).
+         */
+        @Volatile
+        var supportsMove: Boolean = false
+
         fun reset() {
             root = Files.createTempDirectory("sortfold-fake").toFile()
             failQueriesWithSecurityException = false
             failQueriesWithNullCursor = false
             failOpensWithSecurityException = false
+            supportsMove = false
         }
 
         fun fileFor(docId: String): File {
@@ -105,13 +113,14 @@ class FakeDocumentsProvider : DocumentsProvider() {
     ).apply {
         val f = fileFor(documentId)
         if (!f.exists()) throw java.io.FileNotFoundException(documentId)
+        val flags = if (supportsMove) DocumentsContract.Document.FLAG_SUPPORTS_MOVE else 0
         newRow()
             .add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, documentId)
             .add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, f.name)
             .add(DocumentsContract.Document.COLUMN_MIME_TYPE, if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else mimeFor(f))
             .add(DocumentsContract.Document.COLUMN_SIZE, if (f.isDirectory) 0L else f.length())
             .add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, f.lastModified())
-            .add(DocumentsContract.Document.COLUMN_FLAGS, 0)
+            .add(DocumentsContract.Document.COLUMN_FLAGS, flags)
     }
 
     override fun queryChildDocuments(
@@ -124,13 +133,14 @@ class FakeDocumentsProvider : DocumentsProvider() {
         if (failQueriesWithSecurityException) throw SecurityException("Permission revoked: $parentDocumentId")
         if (!fileFor(parentDocumentId).exists()) throw java.io.FileNotFoundException(parentDocumentId)
         for (f in childrenOf(parentDocumentId)) {
+            val flags = if (supportsMove) DocumentsContract.Document.FLAG_SUPPORTS_MOVE else 0
             newRow()
                 .add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, docIdFor(f))
                 .add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, f.name)
                 .add(DocumentsContract.Document.COLUMN_MIME_TYPE, if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else mimeFor(f))
                 .add(DocumentsContract.Document.COLUMN_SIZE, if (f.isDirectory) 0L else f.length())
                 .add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, f.lastModified())
-                .add(DocumentsContract.Document.COLUMN_FLAGS, 0)
+                .add(DocumentsContract.Document.COLUMN_FLAGS, flags)
         }
     }
 
@@ -170,6 +180,20 @@ class FakeDocumentsProvider : DocumentsProvider() {
         val f = fileFor(documentId)
         val target = File(f.parentFile, displayName)
         if (!f.renameTo(target)) throw java.lang.IllegalStateException("rename failed: $documentId -> $displayName")
+        return docIdFor(target)
+    }
+
+    /** Real move when [supportsMove] is on; mirrors the platform semantics. */
+    override fun moveDocument(
+        sourceDocumentId: String,
+        sourceParentDocumentId: String,
+        targetParentDocumentId: String,
+    ): String {
+        if (!supportsMove) throw UnsupportedOperationException("move not supported")
+        val f = fileFor(sourceDocumentId)
+        val targetDir = fileFor(targetParentDocumentId)
+        val target = File(targetDir, f.name)
+        if (!f.renameTo(target)) throw java.lang.IllegalStateException("move failed: $sourceDocumentId")
         return docIdFor(target)
     }
 

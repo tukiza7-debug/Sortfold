@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.sortfold.app.core.model.CapacityOrder
 import com.sortfold.app.core.model.DateGranularity
 import com.sortfold.app.core.model.DuplicatePolicy
 import com.sortfold.app.core.model.SortMode
@@ -46,6 +47,14 @@ data class AppSettings(
     val crashedLastRun: Boolean = false,
     val jobKilledBySystem: Boolean = false,   // set when a running job was killed -> offer battery exemption
     val lastUpdateCheckAt: Long = 0,
+    val lastNotifiedVersion: String? = null,  // B-14: notify once per new version
+    // 1.2.0 capacity defaults: last used values become the next defaults.
+    val capacityDefaultBytes: Long? = null,
+    val capacityDefaultOrder: CapacityOrder = CapacityOrder.SEQUENTIAL,
+    val capacityDefaultPrefix: String = "Part",
+    val capacityDefaultUnit: String = "GB",   // MB | GB for the custom field
+    /** A.5: decimal GB (1,000,000,000 bytes) vs binary GiB (1,073,741,824). */
+    val capacityUnitDecimal: Boolean = true,
 )
 
 /**
@@ -104,6 +113,12 @@ class SettingsRepository(private val context: Context) {
         val CRASHED = booleanPreferencesKey("crashed_last_run")
         val JOB_KILLED = booleanPreferencesKey("job_killed_by_system")
         val LAST_UPDATE_CHECK = longPreferencesKey("last_update_check_at")
+        val LAST_NOTIFIED_VERSION = stringPreferencesKey("last_notified_version")
+        val CAPACITY_BYTES = longPreferencesKey("capacity_default_bytes")
+        val CAPACITY_ORDER = stringPreferencesKey("capacity_default_order")
+        val CAPACITY_PREFIX = stringPreferencesKey("capacity_default_prefix")
+        val CAPACITY_UNIT = stringPreferencesKey("capacity_default_unit")
+        val CAPACITY_DECIMAL = booleanPreferencesKey("capacity_unit_decimal")
     }
 
     val settings: Flow<AppSettings> = dataStore.data.map { p -> toSettings(p) }
@@ -130,6 +145,12 @@ class SettingsRepository(private val context: Context) {
         crashedLastRun = p[Keys.CRASHED] ?: false,
         jobKilledBySystem = p[Keys.JOB_KILLED] ?: false,
         lastUpdateCheckAt = p[Keys.LAST_UPDATE_CHECK] ?: 0L,
+        lastNotifiedVersion = p[Keys.LAST_NOTIFIED_VERSION],
+        capacityDefaultBytes = p[Keys.CAPACITY_BYTES],
+        capacityDefaultOrder = p[Keys.CAPACITY_ORDER]?.let { runCatching { CapacityOrder.valueOf(it) }.getOrNull() } ?: CapacityOrder.SEQUENTIAL,
+        capacityDefaultPrefix = p[Keys.CAPACITY_PREFIX] ?: "Part",
+        capacityDefaultUnit = p[Keys.CAPACITY_UNIT] ?: "GB",
+        capacityUnitDecimal = p[Keys.CAPACITY_DECIMAL] ?: true,
     )
 
     suspend fun snapshot(): AppSettings = settings.first()
@@ -157,6 +178,14 @@ class SettingsRepository(private val context: Context) {
     suspend fun setCrashedLastRun(v: Boolean) = edit { it[Keys.CRASHED] = v }
     suspend fun setJobKilledBySystem(v: Boolean) = edit { it[Keys.JOB_KILLED] = v }
     suspend fun setLastUpdateCheckAt(v: Long) = edit { it[Keys.LAST_UPDATE_CHECK] = v }
+    suspend fun setLastNotifiedVersion(v: String?) = edit { if (v == null) it.remove(Keys.LAST_NOTIFIED_VERSION) else it[Keys.LAST_NOTIFIED_VERSION] = v }
+    suspend fun setCapacityDefaults(bytes: Long?, order: CapacityOrder, prefix: String, unit: String) = edit {
+        if (bytes == null) it.remove(Keys.CAPACITY_BYTES) else it[Keys.CAPACITY_BYTES] = bytes
+        it[Keys.CAPACITY_ORDER] = order.name
+        it[Keys.CAPACITY_PREFIX] = prefix
+        it[Keys.CAPACITY_UNIT] = unit
+    }
+    suspend fun setCapacityUnitDecimal(v: Boolean) = edit { it[Keys.CAPACITY_DECIMAL] = v }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
         dataStore.edit(block)

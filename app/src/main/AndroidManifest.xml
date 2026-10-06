@@ -5,13 +5,8 @@
     <!-- Update check over HTTPS against api.github.com; the only network use. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Media read access: granular on 13+, full read on 12 and below. -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+    <!-- B-18: no READ_MEDIA_* / READ_EXTERNAL_STORAGE — every file operation
+         goes through SAF tree grants, which need no runtime permission. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
@@ -32,7 +27,7 @@
         android:supportsRtl="true"
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Sortfold.Splash"
-        tools:targetApi="35">
+        tools:targetApi="36">
 
         <activity
             android:name=".MainActivity"
@@ -44,7 +39,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Inert host for JVM (Robolectric) Compose UI tests; never shown to users. -->
+        <!-- Inert host for JVM (Robolectric) Compose UI tests. B-18 wanted this
+             moved out of the release manifest entirely, but Robolectric registers
+             components from the binary variant APK, which never merges
+             src/test or src/debug manifests — so the declaration stays here,
+             exported=false and never launched by users. -->
         <activity
             android:name="androidx.activity.ComponentActivity"
             android:exported="false" />

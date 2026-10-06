@@ -343,6 +343,7 @@
     <string name="update_err_no_apk">الإصدار الأخير لا يحتوي على ملف APK مرفق بعد.</string>
     <string name="update_err_unexpected">حدث شيء غير متوقع أثناء التحقق. التفاصيل في مكتبة الأخطاء.</string>
     <string name="a11y_apply_progress">تم فرز %1$d من %2$d</string>
+    <string name="a11y_apply_progress_bytes">تم نقل %1$s من %2$s</string>
     <string name="pattern_prefix">يبدأ بـ</string>
     <string name="pattern_suffix">ينتهي بـ</string>
     <string name="pattern_contains">يحتوي على</string>
@@ -351,4 +352,61 @@
     <string name="wizard_step_preview">المعاينة</string>
     <string name="home_files_sorted">ملفات مرتبة</string>
     <string name="history_search_hint">البحث في العمليات…</string>
+
+    <!-- 1.2.0: التقسيم حسب السعة -->
+    <string name="mode_capacity">التقسيم حسب السعة</string>
+    <string name="mode_capacity_desc">تعبئة مجلدات الجزء 01، الجزء 02، … بحيث لا يتجاوز كل منها الحجم الذي تختاره</string>
+    <string name="short_mode_capacity">السعة</string>
+    <string name="capacity_preset_1gb">1 GB</string>
+    <string name="capacity_preset_2gb">2 GB</string>
+    <string name="capacity_preset_3gb">3 GB</string>
+    <string name="capacity_preset_4gb">4 GB</string>
+    <string name="capacity_preset_custom">مخصص</string>
+    <string name="capacity_custom_label">حجم كل مجلد</string>
+    <string name="capacity_order_label">ترتيب الملفات</string>
+    <string name="capacity_order_sequential">الحفاظ على الترتيب</string>
+    <string name="capacity_order_bestfit">أقل عدد من المجلدات</string>
+    <string name="capacity_prefix_label">بادئة اسم المجلد</string>
+    <string name="capacity_prefix_helper">تُرقَّم الأجزاء: %1$s 01، %1$s 02، …</string>
+    <string name="capacity_unit_helper_decimal">وحدات عشرية: 1 GB = 1,000,000,000 بايت</string>
+    <string name="capacity_unit_helper_binary">وحدات ثنائية: 1 GiB = 1,073,741,824 بايت</string>
+    <string name="capacity_error_invalid">أدخل رقماً، مثال 2.5</string>
+    <string name="capacity_error_min">الحد الأدنى 50 MB</string>
+    <string name="capacity_error_max">الحد الأقصى 1 TB</string>
+    <string name="capacity_estimate_folders">حوالي %1$d مجلد</string>
+    <string name="capacity_estimate_largest">الأكبر %1$s</string>
+    <string name="capacity_folders_title">استخدام المجلدات</string>
+    <string name="capacity_folder_row">%1$d ملف · %2$s / %3$s</string>
+    <string name="capacity_oversized_chip">أكبر من الحد</string>
+    <string name="warn_capacity_oversized">%1$d ملفات أكبر من الحد. تُوضع في مجلد \"أكبر من الحد\" ولا تُقسَّم.</string>
+    <string name="capacity_cap_used">حد المجلد: %1$s</string>
+    <string name="replace_confirm_title">استبدال الملفات الموجودة؟</string>
+    <string name="replace_confirm_body">الوجهة تحتوي بالفعل على ملفات بالأسماء نفسها في \u201c%1$s\u201d. الاستبدال يدمّر النسخ الموجودة — لا يمكن استعادتها بالتراجع.</string>
+    <string name="replace_confirm_yes">استبدال الملفات</string>
+    <string name="settings_capacity_units">وحدات السعة</string>
+    <string name="settings_units_decimal">عشري: 1 GB = 1,000,000,000 بايت</string>
+    <string name="settings_units_binary">ثنائي: 1 GiB = 1,073,741,824 بايت</string>
+    <string name="apply_bytes_done">تم نقل %1$s من %2$s</string>
+    <string name="job_msg_system_timeout">أوقفها النظام مؤقتاً: وصل التطبيق إلى حد العمل في الخلفية. استأنف للمتابعة.</string>
+    <string name="notif_progress_bytes">%1$s من %2$s</string>
+    <string name="eta_seconds">يبقى حوالي %1$d ثانية</string>
+    <string name="eta_minutes">يبقى حوالي %1$d دقيقة</string>
+    <string name="eta_hours">يبقى حوالي %1$d س و %2$d د</string>
+
+    <plurals name="result_retry_failed">
+        <item quantity="zero">لا ملفات فاشلة لإعادة المحاولة</item>
+        <item quantity="one">إعادة المحاولة لملف فاشل واحد</item>
+        <item quantity="two">إعادة المحاولة لملفين فاشلين</item>
+        <item quantity="few">إعادة المحاولة لـ %1$d ملفات فاشلة</item>
+        <item quantity="many">إعادة المحاولة لـ %1$d ملفًا فاشلًا</item>
+        <item quantity="other">إعادة المحاولة لـ %1$d ملف فاشل</item>
+    </plurals>
+    <plurals name="preview_more_files">
+        <item quantity="zero">لا ملفات إضافية</item>
+        <item quantity="one">ملف إضافي واحد</item>
+        <item quantity="two">ملفان إضافيان</item>
+        <item quantity="few">%1$d ملفات إضافية</item>
+        <item quantity="many">%1$d ملفًا إضافيًا</item>
+        <item quantity="other">%1$d ملف إضافي</item>
+    </plurals>
 </resources>

@@ -333,6 +333,7 @@
     <string name="update_err_no_apk">Keluaran terkini belum mempunyai fail APK dilampirkan.</string>
     <string name="update_err_unexpected">Something unexpected happened during the check. Details are in the Error Library.</string>
     <string name="a11y_apply_progress">%1$d daripada %2$d disusun</string>
+    <string name="a11y_apply_progress_bytes">%1$s daripada %2$s dipindah</string>
     <string name="pattern_prefix">Bermula dengan</string>
     <string name="pattern_suffix">Berakhir dengan</string>
     <string name="pattern_contains">Mengandungi</string>
@@ -341,4 +342,51 @@
     <string name="wizard_step_preview">Pratonton</string>
     <string name="home_files_sorted">Fail disusun</string>
     <string name="history_search_hint">Cari operasi…</string>
+
+    <!-- 1.2.0: Pisahkan mengikut kapasiti -->
+    <string name="mode_capacity">Pisahkan mengikut kapasiti</string>
+    <string name="mode_capacity_desc">Isi folder Bahagian 01, Bahagian 02, … yang setiap satu kekal di bawah had saiz pilihan anda</string>
+    <string name="short_mode_capacity">Kapasiti</string>
+    <string name="capacity_preset_1gb">1 GB</string>
+    <string name="capacity_preset_2gb">2 GB</string>
+    <string name="capacity_preset_3gb">3 GB</string>
+    <string name="capacity_preset_4gb">4 GB</string>
+    <string name="capacity_preset_custom">Tersuai</string>
+    <string name="capacity_custom_label">Saiz setiap folder</string>
+    <string name="capacity_order_label">Susunan fail</string>
+    <string name="capacity_order_sequential">Kekalkan susunan</string>
+    <string name="capacity_order_bestfit">Folder paling sedikit</string>
+    <string name="capacity_prefix_label">Awalan nama folder</string>
+    <string name="capacity_prefix_helper">Bahagian dinomborkan: %1$s 01, %1$s 02, …</string>
+    <string name="capacity_unit_helper_decimal">Unit perpuluhan: 1 GB = 1,000,000,000 bait</string>
+    <string name="capacity_unit_helper_binary">Unit binari: 1 GiB = 1,073,741,824 bait</string>
+    <string name="capacity_error_invalid">Masukkan nombor, contohnya 2.5</string>
+    <string name="capacity_error_min">Minimum ialah 50 MB</string>
+    <string name="capacity_error_max">Maksimum ialah 1 TB</string>
+    <string name="capacity_estimate_folders">Kira-kira %1$d folder</string>
+    <string name="capacity_estimate_largest">terbesar %1$s</string>
+    <string name="capacity_folders_title">Penggunaan folder</string>
+    <string name="capacity_folder_row">%1$d fail · %2$s / %3$s</string>
+    <string name="capacity_oversized_chip">Melebihi saiz</string>
+    <string name="warn_capacity_oversized">%1$d fail lebih besar daripada had. Semua dimasukkan ke folder \"Melebihi saiz\" dan tidak dipecahkan.</string>
+    <string name="capacity_cap_used">Had folder: %1$s</string>
+    <string name="replace_confirm_title">Gantikan fail sedia ada?</string>
+    <string name="replace_confirm_body">Destinasi sudah mengandungi fail dengan nama yang sama dalam \u201c%1$s\u201d. Menggantikan memusnahkan salinan sedia ada — tidak boleh dipulihkan dengan urus semula.</string>
+    <string name="replace_confirm_yes">Gantikan fail</string>
+    <string name="settings_capacity_units">Unit kapasiti</string>
+    <string name="settings_units_decimal">Perpuluhan: 1 GB = 1,000,000,000 bait</string>
+    <string name="settings_units_binary">Binari: 1 GiB = 1,073,741,824 bait</string>
+    <string name="apply_bytes_done">%1$s daripada %2$s dipindah</string>
+    <string name="job_msg_system_timeout">Dijeda oleh sistem: aplikasi mencapai had kerja latar belakang. Sambung untuk teruskan.</string>
+    <string name="notif_progress_bytes">%1$s daripada %2$s</string>
+    <string name="eta_seconds">Kira-kira %1$d s lagi</string>
+    <string name="eta_minutes">Kira-kira %1$d min lagi</string>
+    <string name="eta_hours">Kira-kira %1$d j %2$d min lagi</string>
+
+    <plurals name="result_retry_failed">
+        <item quantity="other">Cuba semula %1$d fail yang gagal</item>
+    </plurals>
+    <plurals name="preview_more_files">
+        <item quantity="other">%1$d fail lagi</item>
+    </plurals>
 </resources>

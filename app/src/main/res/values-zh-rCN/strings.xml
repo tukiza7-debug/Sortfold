@@ -333,6 +333,7 @@
     <string name="update_err_no_apk">最新版本尚未附带 APK 文件。</string>
     <string name="update_err_unexpected">检查过程中出现了意外情况。详情请查看错误库。</string>
     <string name="a11y_apply_progress">已整理 %1$d / %2$d</string>
+    <string name="a11y_apply_progress_bytes">已移动 %1$s / %2$s</string>
     <string name="pattern_prefix">开头为</string>
     <string name="pattern_suffix">结尾为</string>
     <string name="pattern_contains">包含</string>
@@ -341,4 +342,51 @@
     <string name="wizard_step_preview">预览</string>
     <string name="home_files_sorted">已整理文件</string>
     <string name="history_search_hint">搜索操作…</string>
+
+    <!-- 1.2.0：按容量拆分 -->
+    <string name="mode_capacity">按容量拆分</string>
+    <string name="mode_capacity_desc">依次填满"第01部分、第02部分……"，每个文件夹都不超过您设定的大小上限</string>
+    <string name="short_mode_capacity">容量</string>
+    <string name="capacity_preset_1gb">1 GB</string>
+    <string name="capacity_preset_2gb">2 GB</string>
+    <string name="capacity_preset_3gb">3 GB</string>
+    <string name="capacity_preset_4gb">4 GB</string>
+    <string name="capacity_preset_custom">自定义</string>
+    <string name="capacity_custom_label">每个文件夹的大小</string>
+    <string name="capacity_order_label">文件顺序</string>
+    <string name="capacity_order_sequential">保持顺序</string>
+    <string name="capacity_order_bestfit">最少文件夹</string>
+    <string name="capacity_prefix_label">文件夹名前缀</string>
+    <string name="capacity_prefix_helper">各部分编号为：%1$s 01、%1$s 02、…</string>
+    <string name="capacity_unit_helper_decimal">十进制单位：1 GB = 1,000,000,000 字节</string>
+    <string name="capacity_unit_helper_binary">二进制单位：1 GiB = 1,073,741,824 字节</string>
+    <string name="capacity_error_invalid">请输入数字，例如 2.5</string>
+    <string name="capacity_error_min">最小为 50 MB</string>
+    <string name="capacity_error_max">最大为 1 TB</string>
+    <string name="capacity_estimate_folders">约 %1$d 个文件夹</string>
+    <string name="capacity_estimate_largest">最大 %1$s</string>
+    <string name="capacity_folders_title">文件夹用量</string>
+    <string name="capacity_folder_row">%1$d 个文件 · %2$s / %3$s</string>
+    <string name="capacity_oversized_chip">超出限制</string>
+    <string name="warn_capacity_oversized">%1$d 个文件超过上限，它们将放入\"超出限制\"文件夹，且不会被拆分。</string>
+    <string name="capacity_cap_used">文件夹上限：%1$s</string>
+    <string name="replace_confirm_title">替换现有文件？</string>
+    <string name="replace_confirm_body">\"%1$s\"中已存在同名文件。替换会销毁现有副本——无法通过撤销恢复。</string>
+    <string name="replace_confirm_yes">替换文件</string>
+    <string name="settings_capacity_units">容量单位</string>
+    <string name="settings_units_decimal">十进制：1 GB = 1,000,000,000 字节</string>
+    <string name="settings_units_binary">二进制：1 GiB = 1,073,741,824 字节</string>
+    <string name="apply_bytes_done">已移动 %1$s / %2$s</string>
+    <string name="job_msg_system_timeout">已被系统暂停：应用达到了后台运行时限。点按"继续"以恢复。</string>
+    <string name="notif_progress_bytes">%1$s / %2$s</string>
+    <string name="eta_seconds">约剩 %1$d 秒</string>
+    <string name="eta_minutes">约剩 %1$d 分钟</string>
+    <string name="eta_hours">约剩 %1$d 小时 %2$d 分</string>
+
+    <plurals name="result_retry_failed">
+        <item quantity="other">重试 %1$d 个失败的文件</item>
+    </plurals>
+    <plurals name="preview_more_files">
+        <item quantity="other">还有 %1$d 个文件</item>
+    </plurals>
 </resources>

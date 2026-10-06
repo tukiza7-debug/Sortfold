@@ -14,12 +14,18 @@ import androidx.compose.animation.core.tween
  * 1.1.0: spring physics for press states and card entry; every animation in
  * the app is wrapped by [reduced] checks at the call site — when reduced
  * motion is on, nothing moves, it only fades near-instantly.
+ *
+ * 1.2.0 (Part C): fade-through exit token for top-level destinations and the
+ * press spring actually wired into [pressable].
  */
 object Motion {
     const val PRESS_MS = 100
     const val SMALL_MS = 200
     const val ENTER_MS = 300
     const val EXIT_MS = 225
+
+    /** C-02 fade-through: the outgoing destination leaves in 90 ms. */
+    const val FADE_THROUGH_EXIT_MS = 90
 
     /** Emphasized decelerate: fast start, gentle settle. */
     val Enter = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
@@ -59,6 +65,9 @@ object Motion {
     fun <T> small() = tween<T>(SMALL_MS, easing = Enter)
 
     fun <T> press() = tween<T>(PRESS_MS, easing = LinearEasing)
+
+    /** C-02 fade-through exit for top-level destinations. */
+    fun <T> fadeThroughExit() = tween<T>(FADE_THROUGH_EXIT_MS, easing = Exit)
 
     /** Stagger delay for list item [index]; 0 beyond the cap. */
     fun staggerDelayMs(index: Int): Int =

@@ -17,6 +17,13 @@ object ModeSuggester {
         val media = files.filter { !it.isDirectory }
         if (media.isEmpty()) return listOf(Suggestion(SortMode.FILE_TYPE, "empty"))
 
+        // 1.2.0: very large folders want a capacity split first — the user is
+        // clearly fighting storage limits, not organizing by content.
+        val totalBytes = media.sumOf { it.sizeBytes }
+        if (totalBytes >= SizeThresholds.BIG_TOTAL_BYTES) {
+            return listOf(Suggestion(SortMode.CAPACITY, "big-total"))
+        }
+
         val images = media.count { it.type == MediaType.IMAGE }
         val videos = media.count { it.type == MediaType.VIDEO }
         val mixedTypes = images > 0 && videos > 0
@@ -61,4 +68,7 @@ object ModeSuggester {
 
 object SizeThresholds {
     const val LARGE_MIN: Long = 20L * 1024 * 1024 // 20 MB, informational threshold for suggestions
+
+    /** 1.2.0: at this scan total the CAPACITY split is suggested (big-total). */
+    const val BIG_TOTAL_BYTES: Long = 8_000_000_000L // 8 GB, decimal units
 }

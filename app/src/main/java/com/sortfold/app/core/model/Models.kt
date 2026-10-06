@@ -16,13 +16,14 @@ enum class MediaType {
 
         private fun fromExtension(ext: String): MediaType = when (ext) {
             "jpg", "jpeg", "png", "gif", "webp", "bmp", "heic", "heif", "avif" -> IMAGE
-            "mp4", "mkv", "mov", "avi", "webm", "3gp", "m4v", "ts", "mpg", "mpeg" -> VIDEO
+            // B-15: ".ts" is commonly TypeScript; it is only video when the mime says so.
+            "mp4", "mkv", "mov", "avi", "webm", "3gp", "m4v", "mpg", "mpeg" -> VIDEO
             else -> OTHER
         }
     }
 }
 
-/** The seven supported sort modes, in canonical nesting priority. */
+/** The eight supported sort modes, in canonical nesting priority. */
 enum class SortMode(val priority: Int) {
     FILE_TYPE(0),
     DATE_TAKEN(1),
@@ -30,13 +31,30 @@ enum class SortMode(val priority: Int) {
     RESOLUTION(3),
     SIZE(4),
     EXTENSION(5),
-    NAME_PATTERN(6);
+    NAME_PATTERN(6),
+
+    /** 1.2.0: split folders into capacity-limited parts; always the LAST nesting level. */
+    CAPACITY(7);
 
     companion object {
         /** Selected modes applied in canonical order, regardless of how the user picked them. */
         fun ordered(selected: Collection<SortMode>): List<SortMode> =
             selected.sortedBy { it.priority }
     }
+}
+
+/**
+ * How files are distributed across capacity-limited part folders.
+ */
+enum class CapacityOrder {
+    /**
+     * Files ordered by effective date ascending, then natural name order; a
+     * folder is filled until the next file does not fit. Predictable and stable.
+     */
+    SEQUENTIAL,
+
+    /** First-Fit-Decreasing: largest files first, placed in the first folder with room. */
+    BEST_FIT,
 }
 
 /** Coarse size buckets for the SIZE sort mode. */
@@ -57,12 +75,17 @@ enum class SizeBucket(val label: String) {
     }
 }
 
-/** Resolution / orientation buckets for the RESOLUTION sort mode. */
+/**
+ * Resolution / orientation buckets for the RESOLUTION sort mode.
+ * B-16: an unreadable resolution gets its own Unknown bucket instead of being
+ * silently mislabelled as SD.
+ */
 enum class ResolutionClass(val label: String) {
     PORTRAIT("Portrait"),
     SD("SD"),
     HD("HD"),
-    UHD_4K("4K");
+    UHD_4K("4K"),
+    UNKNOWN("Unknown");
 
     companion object {
         const val HD_SHORT_SIDE: Int = 720
@@ -73,9 +96,9 @@ enum class ResolutionClass(val label: String) {
          * Square media falls into the quality buckets.
          */
         fun of(width: Int?, height: Int?): ResolutionClass {
-            val w = width ?: return SD
-            val h = height ?: return SD
-            if (w <= 0 || h <= 0) return SD
+            val w = width ?: return UNKNOWN
+            val h = height ?: return UNKNOWN
+            if (w <= 0 || h <= 0) return UNKNOWN
             if (h > w) return PORTRAIT
             val shortSide = minOf(w, h)
             return when {
@@ -108,6 +131,29 @@ enum class SourceApp(val label: String) {
                 else -> OTHER
             }
         }
+
+        /**
+         * B-09: in a flat folder every file used to inherit one label from the
+         * folder name. Well-known file name patterns identify the real source.
+         * Returns null when the name carries no known signature.
+         */
+        fun fromFileName(fileName: String): SourceApp? {
+            val n = fileName.lowercase()
+            return when {
+                n.startsWith("screenshot") -> SCREENSHOTS
+                n.startsWith("img-") && n.contains("-wa") -> WHATSAPP
+                n.startsWith("received_") -> WHATSAPP
+                n.startsWith("telegram") -> TELEGRAM
+                n.startsWith("pxl_") || n.startsWith("img_") ||
+                    n.startsWith("vid_") || n.startsWith("mvimg") -> CAMERA
+                n.contains("download") -> DOWNLOADS
+                else -> null
+            }
+        }
+
+        /** Per-file source: file name signature first, folder name as fallback. */
+        fun forFile(fileName: String, fallbackPath: String): SourceApp =
+            fromFileName(fileName) ?: fromPath(fallbackPath)
     }
 }
 
