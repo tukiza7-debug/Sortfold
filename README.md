@@ -16,31 +16,33 @@ Sortfold organizes the images and videos in a folder you choose. It scans with t
 
 - Pick a source folder; Sortfold scans it and suggests the most useful sort mode.
 - Review a full plan: each file, its destination folder and its size — before anything moves.
-- Apply in the background with real progress, pause/cancel from the notification, and resume after app restarts.
-- Undo the last operation with one tap; duplicates are skipped, renamed or replaced, your choice.
+- **Split by capacity** (new in 1.2.0): keep every Part folder under a size limit you choose — 1–4 GB presets or any custom value.
+- Apply in the background with real byte-level progress, pause/cancel from the notification, and resume after app restarts. Moves use instant `moveDocument` when the provider supports it.
+- Undo the last operation with one tap; duplicates are skipped, renamed or replaced (with an explicit warning), your choice.
 - Every caught error lands in a built-in Error Library you can filter, inspect and export as a ZIP.
 
 ## Sort modes
 
-Combine any of the seven; when combined, folders nest in a fixed order (type first, name rules last).
+Combine any of the eight; when combined, folders nest in a fixed order (type first, capacity last).
 
 | # | Mode | Folders it creates |
 |---|--------------|--------------------------------------------|
 | 1 | File type | `Images`, `Videos`, `Other` |
 | 2 | Date taken | `2024` or `2024-05` from capture date |
-| 3 | Source app | `Camera`, `Screenshots`, `WhatsApp`, `Telegram`, `Downloads` |
-| 4 | Resolution / orientation | `Portrait`, `SD`, `HD`, `4K` |
+| 3 | Source app | `Camera`, `Screenshots`, `WhatsApp`, `Telegram`, `Downloads` — detected per file |
+| 4 | Resolution / orientation | `Portrait`, `SD`, `HD`, `4K`, `Unknown` |
 | 5 | Size | `Small` (< 1 MB), `Medium`, `Large` (> 50 MB) |
 | 6 | Extension | `jpg`, `png`, `mp4`, `mkv`, … |
 | 7 | Name pattern | your own keyword/prefix rules |
+| 8 | Split by capacity | `Part 01`, `Part 02`, … each under your size limit; oversized files go to `Oversized` |
 
 ## How it works
 
 1. **Choose folder** — SAF picker; Sortfold only reads inside the granted tree.
-2. **Choose sort type** — one or more of the seven modes, plus duplicate handling.
-3. **Preview** — the exact list of moves with warnings (large batch, low storage, unsafe targets). Apply is blocked if storage is insufficient.
-4. **Apply** — a foreground `WorkManager` job (dataSync) moves files copy-then-delete, resumable from the last completed file.
-5. **Result** — summary with skipped and failed items and reasons, plus one-tap Undo.
+2. **Choose sort type** — one or more of the eight modes, plus duplicate handling. The capacity mode adds preset chips, a custom size field (50 MB – 1 TB), a "keep order / fewest folders" choice and a live folder estimate.
+3. **Preview** — the exact list of moves with warnings (large batch, low storage, unsafe targets, oversized files, replace confirmations). Apply is blocked only when the largest file truly cannot fit.
+4. **Apply** — a foreground `WorkManager` job (dataSync) moves files with instant `moveDocument` where supported, otherwise a verified 1 MiB-chunk copy — byte-accurate progress with an ETA, resumable from the last completed file, and self-healing after a process death.
+5. **Result** — summary with skipped and failed items and reasons, one-tap Undo, and "retry failed files".
 
 ## Install
 
@@ -71,7 +73,15 @@ Switching is instant via per-app language settings (Android 13+) and in-app swit
 
 Nine groups, every row functional: Language, Appearance (theme, dynamic color, reduce animations), Sorting defaults (mode, duplicate handling, destination folder, confirm-before-apply, large-batch threshold, auto-sort rules), History (retention, clear), Notifications, Updates (auto-check, check now, current version), Storage (app data size, clear cache), Diagnostics (Error Library with entry count and 30-day retention, include-full-paths toggle) and About. The Error Library is a sub-screen of Settings, deep-linked from scan errors, update errors and crash notices; identical errors are grouped with a repeat count and exported as a ZIP with paths masked by default.
 
-## What's new in 1.1.0
+## What's new in 1.2.0
+
+**Split by capacity**: the eighth sort mode fills `Part 01`, `Part 02`, … folders that each stay under a limit you choose — 1/2/3/4 GB presets or any custom value from 50 MB to 1 TB, with decimal (GB) or binary (GiB) units. Daily auto-sort rules can use it too and continue numbering where the last run left off. Under the hood: instant `moveDocument` moves when the provider allows, byte-accurate progress with an ETA for multi-GB files, self-healing resumes after process death, honest RENAME/REPLACE plans with a dedicated replace confirmation, and a motion pass (press springs actually spring, fade-through navigation, predictive back). 19 bugs fixed — see [docs/CHANGELOG-1.2.0.md](docs/CHANGELOG-1.2.0.md) and [docs/AUDIT-1.2.0.md](docs/AUDIT-1.2.0.md).
+
+### Signing note
+
+Every release APK/AAB must be signed with the **same keystore** — Android refuses updates when the signature changes. The release workflow fails fast with a clear message if any of the four signing secrets (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`) is missing or empty.
+
+### What was new in 1.1.0
 
 A refreshed toolchain (AGP 8.13 / Kotlin 2.2.20 / Compose BOM 2025.09 / Android 16), a design-system pass with springs, skeletons and a wizard stepper, live progress on Home, search in History, a pager-based onboarding, and 27 bug fixes — including safer REPLACE semantics (your files can no longer be lost to a failed copy), crash-proof settings storage, and reliable undo. See [docs/CHANGELOG-1.1.0.md](docs/CHANGELOG-1.1.0.md) and [docs/AUDIT-1.1.0.md](docs/AUDIT-1.1.0.md).
 
